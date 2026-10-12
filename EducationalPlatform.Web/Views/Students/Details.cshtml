@@ -1,0 +1,276 @@
+﻿@model EducationalPlatform.Models.Student
+
+@{
+    ViewData["Title"] = "Student Details";
+
+    var currentEnrollment = Model.Enrollments
+        .FirstOrDefault(e => e.Status == "Active");
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h1>Student Details</h1>
+
+    <div>
+        @if (currentEnrollment != null)
+        {
+            <a asp-action="Transfer"
+               asp-route-id="@Model.Id"
+               class="btn btn-warning">
+                Transfer Student
+            </a>
+        }
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Back to Students
+        </a>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <!-- Student Information -->
+    <div class="col-md-6 mb-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                <h5 class="mb-0">Student Information</h5>
+            </div>
+
+            <div class="card-body">
+
+                <dl class="row">
+
+                    <dt class="col-sm-4">
+                        Full Name
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.FullName
+                    </dd>
+
+
+                    <dt class="col-sm-4">
+                        Email
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.ApplicationUser.Email
+                    </dd>
+
+
+                    <dt class="col-sm-4">
+                        Phone
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @(Model.ApplicationUser.PhoneNumber ?? "-")
+                    </dd>
+
+
+                    <dt class="col-sm-4">
+                        Date of Birth
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @(Model.DateOfBirth?.ToString("yyyy-MM-dd") ?? "-")
+                    </dd>
+
+
+                    <dt class="col-sm-4">
+                        Status
+                    </dt>
+
+                    <dd class="col-sm-8">
+
+                        @if (Model.Status == "Active")
+                        {
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                        }
+                        else if (Model.Status == "Suspended")
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Suspended
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                @Model.Status
+                            </span>
+                        }
+
+                    </dd>
+
+                </dl>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Current Academic Information -->
+    <div class="col-md-6 mb-4">
+
+        <div class="card shadow-sm">
+
+            <div class="card-header">
+                <h5 class="mb-0">Current Academic Information</h5>
+            </div>
+
+            <div class="card-body">
+
+                @if (currentEnrollment != null)
+                {
+                    <dl class="row">
+
+                        <dt class="col-sm-4">
+                            Year
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @currentEnrollment.Group.Year.Name
+                        </dd>
+
+
+                        <dt class="col-sm-4">
+                            Group
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @currentEnrollment.Group.Name
+                        </dd>
+
+
+                        <dt class="col-sm-4">
+                            Joined At
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @currentEnrollment.JoinedAt.ToString("yyyy-MM-dd")
+                        </dd>
+
+
+                        <dt class="col-sm-4">
+                            Enrollment Status
+                        </dt>
+
+                        <dd class="col-sm-8">
+
+                            <span class="badge bg-success">
+                                @currentEnrollment.Status
+                            </span>
+
+                        </dd>
+
+                    </dl>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0">
+                        This student has no active enrollment.
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Enrollment History -->
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+        <h5 class="mb-0">Enrollment History</h5>
+    </div>
+
+    <div class="card-body">
+
+        @if (!Model.Enrollments.Any())
+        {
+            <div class="alert alert-info mb-0">
+                No enrollment history found.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped">
+
+                    <thead class="table-dark">
+
+                        <tr>
+                            <th>Year</th>
+                            <th>Group</th>
+                            <th>Joined At</th>
+                            <th>Left At</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var enrollment in Model.Enrollments
+                            .OrderByDescending(e => e.JoinedAt))
+                        {
+                            <tr>
+
+                                <td>
+                                    @enrollment.Group.Year.Name
+                                </td>
+
+                                <td>
+                                    @enrollment.Group.Name
+                                </td>
+
+                                <td>
+                                    @enrollment.JoinedAt.ToString("yyyy-MM-dd")
+                                </td>
+
+                                <td>
+                                    @(enrollment.LeftAt?.ToString("yyyy-MM-dd") ?? "-")
+                                </td>
+
+                                <td>
+
+                                    @if (enrollment.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            @enrollment.Status
+                                        </span>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</div>

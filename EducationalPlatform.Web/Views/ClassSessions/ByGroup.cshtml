@@ -1,0 +1,134 @@
+﻿@model IEnumerable<EducationalPlatform.Models.ClassSession>
+
+@{
+    ViewData["Title"] = $"Class Sessions - {ViewBag.YearName} / {ViewBag.GroupName}";
+    int yearId = (int)ViewBag.YearId;
+    int groupId = (int)ViewBag.GroupId;
+}
+
+<h2>Class Sessions</h2>
+<h5 class="text-muted">@ViewBag.YearName / @ViewBag.GroupName</h5>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="mb-3">
+    <a asp-action="Create"
+       asp-route-yearId="@yearId"
+       asp-route-groupId="@groupId"
+       class="btn btn-success">
+        Add Session
+    </a>
+
+    <a asp-action="Index" class="btn btn-outline-primary">
+        View All Sessions — All Years
+    </a>
+
+    <a asp-action="ByYear"
+       asp-route-id="@yearId"
+       class="btn btn-outline-primary">
+        View All Sessions — @ViewBag.YearName
+    </a>
+
+    <a asp-action="GroupsByYear"
+       asp-route-id="@yearId"
+       class="btn btn-outline-secondary">
+        Back to Groups
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No class sessions have been created for @ViewBag.GroupName yet.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Status</th>
+                    <th style="min-width: 250px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var session in Model)
+                {
+                    <tr>
+                        <td>@session.Date.ToString("dd/MM/yyyy")</td>
+                        <td>@session.StartTime.ToString(@"hh\:mm")</td>
+                        <td>@session.EndTime.ToString(@"hh\:mm")</td>
+                        <td>
+                            @if (session.Status == "Completed")
+                            {
+                                <span class="badge bg-success">Completed</span>
+                            }
+                            else if (session.Status == "Cancelled")
+                            {
+                                <span class="badge bg-danger">Cancelled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Scheduled</span>
+                            }
+                        </td>
+                        <td>
+                            @if (session.Status != "Cancelled")
+                            {
+                                <a asp-action="Edit"
+                                   asp-route-id="@session.Id"
+                                   asp-route-yearId="@yearId"
+                                   asp-route-groupId="@groupId"
+                                   class="btn btn-sm btn-warning">
+                                    Edit
+                                </a>
+                            }
+
+                            @if (session.Status == "Scheduled")
+                            {
+                                <form asp-action="Complete"
+                                      asp-route-id="@session.Id"
+                                      asp-route-yearId="@yearId"
+                                      asp-route-groupId="@groupId"
+                                      method="post"
+                                      class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success">
+                                        Complete
+                                    </button>
+                                </form>
+
+                                <form asp-action="Cancel"
+                                      asp-route-id="@session.Id"
+                                      asp-route-yearId="@yearId"
+                                      asp-route-groupId="@groupId"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to cancel this session?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger">
+                                        Cancel
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

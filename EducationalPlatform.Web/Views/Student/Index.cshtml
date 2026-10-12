@@ -1,0 +1,105 @@
+﻿@using EducationalPlatform.Models
+
+@{
+    ViewData["Title"] = "Student Dashboard";
+
+    var enrollment = ViewBag.CurrentEnrollment as Enrollment;
+}
+
+<h2>Welcome, @ViewBag.StudentName!</h2>
+
+@if (enrollment != null)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>My Current Enrollment</h5>
+            <p>
+                <strong>Year:</strong>
+                @enrollment.Group.Year.Name
+            </p>
+            <p>
+                <strong>Group:</strong>
+                @enrollment.Group.Name
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        You do not have an active enrollment.
+    </div>
+}
+
+<h4>Attendance Summary</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Total Recorded Sessions</h6>
+                <h3>@ViewBag.TotalSessions</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Present</h6>
+                <h3>@ViewBag.PresentCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Absent</h6>
+                <h3>@ViewBag.AbsentCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Late</h6>
+                <h3>@ViewBag.LateCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6>Excused</h6>
+                <h3>@ViewBag.ExcusedCount</h3>
+            </div>
+        </div>
+    </div>
+
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-body">
+            <h6>Not Recorded</h6>
+            <h3>@ViewBag.NotRecordedCount</h3>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-body">
+            <h6>Cancelled Sessions</h6>
+            <h3>@ViewBag.CancelledCount</h3>
+        </div>
+    </div>
+</div>
+</div>
+
+<a asp-controller="Student"
+   asp-action="Attendance"
+   class="btn btn-primary">
+    View Attendance History
+</a>

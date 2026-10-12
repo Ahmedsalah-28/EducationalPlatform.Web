@@ -1,0 +1,90 @@
+﻿@model EducationalPlatform.ViewModels.AttendanceSessionViewModel
+
+@{
+    ViewData["Title"] = "Take Attendance";
+}
+
+<h2>Take Attendance</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Year:</strong> @Model.YearName</p>
+        <p><strong>Group:</strong> @Model.GroupName</p>
+        <p><strong>Date:</strong> @Model.Date.ToString("yyyy-MM-dd")</p>
+        <p>
+            <strong>Time:</strong>
+            @Model.StartTime - @Model.EndTime
+        </p>
+        <p><strong>Session Status:</strong> @Model.SessionStatus</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (Model.Students.Count == 0)
+{
+    <div class="alert alert-warning">
+        No active students are enrolled in this group.
+    </div>
+}
+else
+{
+    <form asp-action="Take" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="SessionId" />
+
+        <div asp-validation-summary="All"
+             class="text-danger mb-3"></div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Attendance Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.Students.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            @Model.Students[i].FullName
+
+                            <input type="hidden"
+                                   asp-for="Students[i].StudentId" />
+
+                            <input type="hidden"
+                                   asp-for="Students[i].FullName" />
+                        </td>
+                        <td>
+                            <select asp-for="Students[i].Status"
+                                    class="form-select">
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                                <option value="Late">Late</option>
+                                <option value="Excused">Excused</option>
+                            </select>
+
+                            <span asp-validation-for="Students[i].Status"
+                                  class="text-danger"></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">
+            Save Attendance
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Back to Sessions
+        </a>
+    </form>
+}

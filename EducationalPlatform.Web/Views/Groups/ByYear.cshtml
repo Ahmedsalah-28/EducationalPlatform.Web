@@ -1,0 +1,106 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Group>
+
+@{
+    ViewData["Title"] = "Groups by Year";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2>Groups - @ViewBag.SelectedYearName</h2>
+        </div>
+
+        <div>
+            <a asp-action="Browse"
+               class="btn btn-outline-secondary">
+                Back to Years
+            </a>
+
+            <a asp-action="Index"
+               class="btn btn-outline-primary">
+                View All Groups
+            </a>
+
+            <a asp-action="Create"
+               asp-route-yearId="@ViewBag.SelectedYearId"
+               class="btn btn-primary">
+                + Add Group
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No groups have been created for this year yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var group in Model)
+                {
+                    <tr>
+                        <td>@group.Name</td>
+                        <td>@group.Description</td>
+
+                        <td>
+                            @if (group.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Inactive
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@group.Id"
+                               asp-route-yearId="@ViewBag.SelectedYearId"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+
+                            @if (group.IsActive)
+                            {
+
+                                <form asp-action="Deactivate"
+                                      asp-route-id="@group.Id"
+                                      asp-route-yearId="@ViewBag.SelectedYearId"
+                                      method="post"
+                                      class="d-inline">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Deactivate this group?');">
+                                        Deactivate
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</div>

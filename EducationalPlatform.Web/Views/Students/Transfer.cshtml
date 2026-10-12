@@ -1,0 +1,192 @@
+﻿@model EducationalPlatform.ViewModels.TransferStudentViewModel
+
+@{
+    ViewData["Title"] = "Transfer Student";
+}
+
+<div class="row">
+    <div class="col-md-8">
+
+        <h1 class="mb-4">Transfer Student</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                Current Enrollment
+            </div>
+
+            <div class="card-body">
+
+                <dl class="row mb-0">
+
+                    <dt class="col-sm-4">
+                        Student
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.StudentName
+                    </dd>
+
+                    <dt class="col-sm-4">
+                        Current Year
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.CurrentYearName
+                    </dd>
+
+                    <dt class="col-sm-4">
+                        Current Group
+                    </dt>
+
+                    <dd class="col-sm-8">
+                        @Model.CurrentGroupName
+                    </dd>
+
+                </dl>
+
+            </div>
+        </div>
+
+        <form asp-action="Transfer" method="post">
+
+            <input type="hidden"
+                   asp-for="StudentId" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+            <h5 class="mb-3">
+                New Enrollment
+            </h5>
+
+            <div class="mb-3">
+
+                <label asp-for="NewYearId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="NewYearId"
+                        asp-items="ViewBag.Years"
+                        class="form-select"
+                        id="newYearSelect">
+
+                    <option value="">
+                        -- Select Year --
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="NewYearId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="NewGroupId"
+                       class="form-label">
+                </label>
+
+                <select asp-for="NewGroupId"
+                        asp-items="ViewBag.Groups"
+                        class="form-select"
+                        id="newGroupSelect">
+
+                    <option value="">
+                        -- Select Group --
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="NewGroupId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="TransferDate"
+                       class="form-label">
+                </label>
+
+                <input asp-for="TransferDate"
+                       class="form-control"
+                       type="date" />
+
+                <span asp-validation-for="TransferDate"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="alert alert-warning">
+                <strong>Important:</strong>
+                The current enrollment will be closed and a new
+                enrollment will be created. The student's history
+                will be preserved.
+            </div>
+
+
+            <button type="submit" class="btn btn-warning">
+                Confirm Transfer
+            </button>
+
+            <a asp-action="Details"
+               asp-route-id="@Model.StudentId"
+               class="btn btn-secondary">
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document
+            .getElementById("newYearSelect")
+            .addEventListener("change", async function () {
+
+                const yearId = this.value;
+
+                const groupSelect =
+                    document.getElementById("newGroupSelect");
+
+                groupSelect.innerHTML =
+                    '<option value="">-- Select Group --</option>';
+
+                if (!yearId) {
+                    return;
+                }
+
+                const response =
+                    await fetch(
+                        `/Students/GetGroupsByYear?yearId=${yearId}`
+                    );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const groups = await response.json();
+
+                groups.forEach(group => {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value = group.id;
+                    option.textContent = group.name;
+
+                    groupSelect.appendChild(option);
+                });
+            });
+    </script>
+}

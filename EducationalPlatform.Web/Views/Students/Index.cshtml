@@ -1,0 +1,100 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Student>
+
+@{
+    ViewData["Title"] = "Students";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Students</h1>
+
+    <a asp-action="Create" class="btn btn-primary">
+        Add Student
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No students found.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Year</th>
+                    <th>Group</th>
+                    <th>Status</th>
+                    <th>Joined At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var student in Model)
+                {
+                    var activeEnrollment = student.Enrollments
+                        .FirstOrDefault(e => e.Status == "Active");
+
+                    <tr>
+                        <td>@student.FullName</td>
+
+                        <td>
+                            @student.ApplicationUser.Email
+                        </td>
+
+                        <td>
+                            @student.ApplicationUser.PhoneNumber
+                        </td>
+
+                        <td>
+                            @(activeEnrollment?.Group?.Year?.Name ?? "-")
+                        </td>
+
+                        <td>
+                            @(activeEnrollment?.Group?.Name ?? "-")
+                        </td>
+
+                        <td>
+                            @if (student.Status == "Active")
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else if (student.Status == "Suspended")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Suspended
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @student.Status
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            @(activeEnrollment?.JoinedAt.ToString("yyyy-MM-dd") ?? "-")
+                        </td>
+
+                        <td>
+                            <a asp-action="Details"
+                               asp-route-id="@student.Id"
+                               class="btn btn-sm btn-outline-primary">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

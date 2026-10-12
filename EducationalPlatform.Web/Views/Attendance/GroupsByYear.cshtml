@@ -1,0 +1,60 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Group>
+
+@{
+    ViewData["Title"] = "Attendance Groups";
+}
+
+<div class="mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-3">
+        &larr; All Years
+    </a>
+
+    <h2>Attendance — @ViewBag.YearName</h2>
+    <p class="text-muted">Choose a group to view its class sessions.</p>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No active groups are available for this year.
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var group in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@group.Name</h5>
+
+                        <div style="min-height: 48px;">
+                            @if (!string.IsNullOrWhiteSpace(group.Description))
+                            {
+                                <p class="text-muted">@group.Description</p>
+                            }
+                            else
+                            {
+                                <p>&nbsp;</p>
+                            }
+                        </div>
+
+                        <div class="mt-auto">
+                            <a asp-action="ClassSessionsByGroup"
+                               asp-route-id="@group.Id"
+                               class="btn btn-primary w-100">
+                                View Class Sessions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

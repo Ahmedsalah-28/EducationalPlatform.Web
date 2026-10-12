@@ -1,0 +1,58 @@
+﻿@model EducationalPlatform.ViewModels.RegistrationRequestViewModel
+
+@{
+    ViewData["Title"] = "Student Registration";
+}
+
+<h2>Student Registration</h2>
+
+<p>Fill in your information to request enrollment.</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="GroupId" class="form-label"></label>
+                <select asp-for="GroupId"
+                        asp-items="ViewBag.Groups"
+                        class="form-select">
+                    <option value="">-- Select Group --</option>
+                </select>
+                <span asp-validation-for="GroupId"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Submit Registration
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,85 @@
+﻿@model EducationalPlatform.ViewModels.ClassSessionViewModel
+
+@{
+    ViewData["Title"] = "Edit Class Session";
+    int? selectedYearId = ViewBag.SelectedYearId as int?;
+    int? selectedGroupId = ViewBag.SelectedGroupId as int?;
+}
+
+<h2>Edit Class Session</h2>
+
+<div class="row">
+    <div class="col-md-7">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+
+            <input asp-for="Id" type="hidden" />
+
+            @if (selectedYearId.HasValue)
+            {
+                <input type="hidden" name="returnYearId" value="@selectedYearId.Value" />
+            }
+
+            @if (selectedGroupId.HasValue)
+            {
+                <input type="hidden" name="returnGroupId" value="@selectedGroupId.Value" />
+            }
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="GroupId" class="form-label">Group</label>
+                <select asp-for="GroupId" asp-items="ViewBag.Groups" class="form-select">
+                    <option value="">-- Select Group --</option>
+                </select>
+                <span asp-validation-for="GroupId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Date" class="form-label"></label>
+                <input asp-for="Date" type="date" class="form-control" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="StartTime" class="form-label">Start Time</label>
+                <input asp-for="StartTime" type="time" class="form-control" />
+                <span asp-validation-for="StartTime" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="EndTime" class="form-label">End Time</label>
+                <input asp-for="EndTime" type="time" class="form-control" />
+                <span asp-validation-for="EndTime" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <input value="@Model.Status" class="form-control" readonly />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+
+            @if (selectedGroupId.HasValue)
+            {
+                <a asp-action="ByGroup"
+                   asp-route-id="@selectedGroupId.Value"
+                   class="btn btn-outline-secondary">Cancel</a>
+            }
+            else if (selectedYearId.HasValue)
+            {
+                <a asp-action="ByYear"
+                   asp-route-id="@selectedYearId.Value"
+                   class="btn btn-outline-secondary">Cancel</a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            }
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

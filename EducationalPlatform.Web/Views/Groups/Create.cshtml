@@ -1,0 +1,113 @@
+﻿@model EducationalPlatform.ViewModels.GroupViewModel
+
+@{
+    ViewData["Title"] = "Create Group";
+    var selectedYearId = ViewBag.SelectedYearId as int?;
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Create Group</h1>
+
+        @if (selectedYearId.HasValue)
+        {
+            <a asp-action="ByYear"
+               asp-route-id="@selectedYearId.Value"
+               class="btn btn-outline-secondary">
+                Back to Groups
+            </a>
+        }
+        else
+        {
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+                All Groups
+            </a>
+        }
+    </div>
+
+    <hr />
+
+    <form asp-action="Create"
+          asp-route-yearId="@selectedYearId"
+          method="post">
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
+
+        @if (selectedYearId.HasValue)
+        {
+            <input type="hidden"
+                   name="returnYearId"
+                   value="@selectedYearId.Value" />
+        }
+
+        <div class="mb-3">
+            <label asp-for="YearId" class="form-label">
+                Academic Year
+            </label>
+
+            <select asp-for="YearId"
+                    asp-items="ViewBag.Years"
+                    class="form-select">
+                <option value="">-- Select Year --</option>
+            </select>
+
+            <span asp-validation-for="YearId"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+
+            <input asp-for="Name" class="form-control" />
+
+            <span asp-validation-for="Name"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="3"></textarea>
+
+            <span asp-validation-for="Description"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label asp-for="IsActive" class="form-check-label"></label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Create
+        </button>
+
+        @if (selectedYearId.HasValue)
+        {
+            <a asp-action="ByYear"
+               asp-route-id="@selectedYearId.Value"
+               class="btn btn-secondary">
+                Cancel
+            </a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn btn-secondary">
+                Cancel
+            </a>
+        }
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

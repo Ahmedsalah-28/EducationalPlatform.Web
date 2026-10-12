@@ -1,0 +1,47 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Group>
+
+@{
+    ViewData["Title"] = $"Groups - {ViewBag.YearName}";
+    int yearId = (int)ViewBag.YearId;
+}
+
+<h2>Groups — @ViewBag.YearName</h2>
+
+<div class="mb-3">
+    <a asp-action="ByYear"
+       asp-route-id="@yearId"
+       class="btn btn-primary">
+        View All Sessions — @ViewBag.YearName
+    </a>
+
+    <a asp-action="Browse"
+       class="btn btn-outline-secondary">
+        Back to Years
+    </a>
+</div>
+
+<div class="row">
+    @foreach (var group in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@group.Name</h5>
+
+                    <a asp-action="ByGroup"
+                       asp-route-id="@group.Id"
+                       class="btn btn-outline-primary">
+                        View Sessions
+                    </a>
+
+                    <a asp-action="Create"
+                       asp-route-yearId="@yearId"
+                       asp-route-groupId="@group.Id"
+                       class="btn btn-success">
+                        Add Session
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

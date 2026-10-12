@@ -1,0 +1,57 @@
+﻿@model EducationalPlatform.ViewModels.ReviewRegistrationRequestViewModel
+
+@{
+    ViewData["Title"] = "Review Registration Request";
+}
+
+<h2>Review Registration Request</h2>
+
+<div asp-validation-summary="ModelOnly"
+     class="text-danger mb-3"></div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <p>
+            <strong>Full Name:</strong> @Model.FullName
+        </p>
+        <p>
+            <strong>Email:</strong> @Model.Email
+        </p>
+        <p>
+            <strong>Phone:</strong> @Model.Phone
+        </p>
+        <p>
+            <strong>Requested Group:</strong> @Model.GroupName
+        </p>
+    </div>
+</div>
+
+<form asp-action="Review" method="post">
+    <input asp-for="RequestId" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label"></label>
+
+        <input asp-for="Password" class="form-control" />
+
+        <span asp-validation-for="Password"
+              class="text-danger"></span>
+
+        <small class="text-muted">
+            Set an initial password for the student's account.
+            The student should change it after signing in.
+        </small>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Approve and Create Account
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

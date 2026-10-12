@@ -1,0 +1,107 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Group>
+
+@{
+    ViewData["Title"] = "Groups";
+}
+
+<div class="container mt-4">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>All Groups</h1>
+
+        <div>
+            <a asp-action="Browse"
+               class="btn btn-outline-primary">
+                Browse by Year
+            </a>
+
+            <a asp-action="Create"
+               class="btn btn-primary">
+                + Add Group
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No groups have been created yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover">
+
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Group</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var group in Model)
+                {
+                    <tr>
+                        <td>
+                            @group.Year.Name
+                        </td>
+
+                        <td>
+                            @group.Name
+                        </td>
+
+                        <td>
+                            @group.Description
+                        </td>
+
+                        <td>
+                            @if (group.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Inactive
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@group.Id"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+
+                            @if (group.IsActive)
+                            {
+                                <form asp-action="Deactivate"
+                                      asp-route-id="@group.Id"
+                                      method="post"
+                                      class="d-inline">
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Deactivate this group?');">
+                                        Deactivate
+                                    </button>
+
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    }
+
+</div>

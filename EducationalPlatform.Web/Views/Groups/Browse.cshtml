@@ -1,0 +1,51 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Year>
+
+@{
+    ViewData["Title"] = "Browse Groups by Year";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Browse Groups by Year</h2>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            View All Groups
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No academic years found.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var year in Model)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @year.Name
+                            </h5>
+
+                            <p class="text-muted">
+                                @(year.Description ?? "No description")
+                            </p>
+
+                            <a asp-action="ByYear"
+                               asp-route-id="@year.Id"
+                               class="btn btn-primary">
+                                View Groups
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

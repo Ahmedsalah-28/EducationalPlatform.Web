@@ -1,0 +1,76 @@
+﻿@model IEnumerable<EducationalPlatform.ViewModels.StudentAttendanceViewModel>
+
+@{
+    ViewData["Title"] = "My Attendance";
+}
+
+<h2>My Attendance History</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Year</th>
+            <th>Group</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Session Status</th>
+            <th>My Attendance</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="7" class="text-center">
+                    No sessions found for your current group.
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var session in Model)
+            {
+                <tr>
+                    <td>@session.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@session.YearName</td>
+                    <td>@session.GroupName</td>
+                    <td>@session.StartTime</td>
+                    <td>@session.EndTime</td>
+                    <td>@session.SessionStatus</td>
+                    <td>
+                        @if (session.AttendanceStatus == "Present")
+                        {
+                            <span class="badge bg-success">Present</span>
+                        }
+                        else if (session.AttendanceStatus == "Absent")
+                        {
+                            <span class="badge bg-danger">Absent</span>
+                        }
+                        else if (session.AttendanceStatus == "Late")
+                        {
+                            <span class="badge bg-warning text-dark">Late</span>
+                        }
+                        else if (session.AttendanceStatus == "Excused")
+                        {
+                            <span class="badge bg-info text-dark">Excused</span>
+                        }
+                        else if (session.AttendanceStatus == "Cancelled")
+                        {
+                            <span class="badge bg-secondary">Cancelled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Not Recorded</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">
+    Back to Dashboard
+</a>

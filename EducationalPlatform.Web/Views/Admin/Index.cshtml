@@ -1,0 +1,120 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+
+    <h1>Admin Dashboard</h1>
+
+    <p class="text-muted">
+        Welcome to the Educational Platform Administration Panel.
+    </p>
+
+    <hr />
+
+    <div class="row">
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Years</h5>
+                    <p class="card-text">
+                        Manage academic years.
+                    </p>
+                    <a asp-controller="years"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Manage Years
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Groups</h5>
+                    <p class="card-text">
+                        Manage groups and students.
+                    </p>
+                    <a asp-controller="Groups"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Manage Groups
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Assistants</h5>
+                    <p class="card-text">
+                        Manage assistants and permissions.
+                    </p>
+                    <a href="#" class="btn btn-primary">
+                        Manage Assistants
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Group Schedules</h5>
+                    <p class="card-text">
+                        Manage Group Schedules.
+                    </p>
+                    @* <a asp-controller="GroupSchedules"
+                       asp-action="Index"
+                       class="btn btn btn-primary">
+                        Manage Group Schedules
+                    </a> *@
+                    <a asp-controller="GroupSchedules"
+                       asp-action="Browse"
+                       class="btn btn-primary">
+                        Manage Group Schedules
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Class Sessionss</h5>
+                    <p class="card-text">
+                        Manage Class Sessionss.
+                    </p>
+
+                    <a asp-controller="ClassSessions"
+                       asp-action="Browse"
+                       class="btn btn-primary">
+                        Manage Class Sessions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Attendance </h5>
+                    <p class="card-text">
+                        Attendance Management.
+                    </p>
+
+                    <a asp-controller="Attendance"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Attendance Management
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

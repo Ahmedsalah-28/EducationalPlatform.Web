@@ -1,0 +1,70 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Year>
+
+@{
+    ViewData["Title"] = "Class Sessions - Select Year";
+}
+
+<h2>Class Sessions — Select Year</h2>
+<p class="text-muted">Choose a year to view its groups and manage their class sessions.</p>
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-outline-primary">
+        View All Sessions — All Years
+    </a>
+    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+        Back to Dashboard
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No academic years found.</div>
+}
+else
+{
+    <div class="row">
+
+        @foreach (var year in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title mb-3">
+                            @year.Name
+                        </h5>
+
+                        <div class="card-description mb-3"
+                             style="min-height: 48px;">
+                            @if (!string.IsNullOrWhiteSpace(year.Description))
+                            {
+                                <p class="card-text mb-0">
+                                    @year.Description
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="card-text mb-0 text-muted">
+                                    &nbsp;
+                                </p>
+                            }
+                        </div>
+
+                        <div class="mt-auto d-flex flex-column gap-2">
+                            <a asp-action="GroupsByYear"
+                               asp-route-id="@year.Id"
+                               class="btn btn-primary w-100">
+                                View Groups
+                            </a>
+
+                            <a asp-action="ByYear"
+                               asp-route-id="@year.Id"
+                               class="btn btn-outline-primary w-100">
+                                View All Sessions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
