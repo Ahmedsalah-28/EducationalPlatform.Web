@@ -1,0 +1,26 @@
+@model EducationalPlatform.ViewModels.TrainingViewModel
+
+@{
+    ViewData["Title"] = "Edit Training";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">Edit Training</h1>
+
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <partial name="_TrainingFields" model="Model" />
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

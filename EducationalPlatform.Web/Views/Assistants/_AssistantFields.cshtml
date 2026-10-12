@@ -1,0 +1,41 @@
+@model EducationalPlatform.ViewModels.AssistantViewModel
+
+<div class="mb-3">
+    <label asp-for="FullName" class="form-label"></label>
+    <input asp-for="FullName" class="form-control" />
+    <span asp-validation-for="FullName" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Phone" class="form-label"></label>
+    <input asp-for="Phone" class="form-control" />
+    <span asp-validation-for="Phone" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Status" class="form-label"></label>
+    <select asp-for="Status" class="form-select">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+    </select>
+    <span asp-validation-for="Status" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Allowed Years</label>
+    <div class="form-text mb-2">
+        The assistant can only take attendance for groups in the selected years.
+    </div>
+
+    @foreach (var year in Model.AvailableYears)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox"
+                   name="SelectedYearIds" value="@year.Id" id="year_@year.Id"
+                   @(Model.SelectedYearIds.Contains(year.Id) ? "checked" : "") />
+            <label class="form-check-label" for="year_@year.Id">@year.Name</label>
+        </div>
+    }
+
+    <span asp-validation-for="SelectedYearIds" class="text-danger"></span>
+</div>

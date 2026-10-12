@@ -1,0 +1,76 @@
+@model IEnumerable<EducationalPlatform.Models.Assistant>
+
+@{
+    ViewData["Title"] = "Assistants";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Assistants</h1>
+
+    <div>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary me-2">
+            Back to Dashboard
+        </a>
+        <a asp-action="Create" class="btn btn-primary">Add Assistant</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No assistants found.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Allowed Years</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var assistant in Model)
+                {
+                    <tr>
+                        <td>@assistant.FullName</td>
+                        <td>@assistant.ApplicationUser.Email</td>
+                        <td>@assistant.ApplicationUser.PhoneNumber</td>
+                        <td>
+                            @foreach (var ay in assistant.AssistantYears.OrderBy(x => x.Year.Name))
+                            {
+                                <span class="badge bg-primary me-1">@ay.Year.Name</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge @(assistant.Status == "Active" ? "bg-success" : "bg-secondary")">
+                                @assistant.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@assistant.Id"
+                               class="btn btn-sm btn-warning">Edit</a>
+
+                            <form asp-action="ToggleStatus" asp-route-id="@assistant.Id"
+                                  method="post" class="d-inline">
+                                <button type="submit"
+                                        class="btn btn-sm @(assistant.Status == "Active" ? "btn-outline-danger" : "btn-outline-success")">
+                                    @(assistant.Status == "Active" ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

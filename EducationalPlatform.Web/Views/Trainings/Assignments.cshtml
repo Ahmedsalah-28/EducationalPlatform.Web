@@ -1,0 +1,66 @@
+@model IEnumerable<EducationalPlatform.ViewModels.TrainingAssignmentListItem>
+
+@{
+    ViewData["Title"] = "Training Assignments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Training Assignments</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Trainings</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No training assignments yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Training</th>
+                    <th>Type</th>
+                    <th>Year</th>
+                    <th>Group</th>
+                    <th>Date</th>
+                    <th>Graded</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.TrainingTitle <span class="text-muted small">(max @a.MaxGrade.ToString("0.##"))</span></td>
+                        <td>@(a.TrainingType == "InClass" ? "In-Class" : a.TrainingType)</td>
+                        <td>@a.YearName</td>
+                        <td>@a.GroupName</td>
+                        <td>@a.AssignedDate.ToString("yyyy-MM-dd")</td>
+                        <td>@a.GradedCount / @a.StudentCount</td>
+                        <td>
+                            @if (a.TrainingType == "InClass")
+                            {
+                                <a asp-action="Grade" asp-route-id="@a.Id" class="btn btn-sm btn-success">Grade</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Student attempts</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

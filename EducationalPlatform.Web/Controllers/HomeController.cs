@@ -8,6 +8,16 @@ namespace EducationalPlatform.Web.Controllers
     {
         public IActionResult Index()
         {
+
+            if (User.IsInRole("Admin"))
+                return RedirectToAction("Index", "Admin");
+
+            if (User.IsInRole("Assistant"))
+                return RedirectToAction("Index", "AssistantDashboard");
+
+            if (User.IsInRole("Student"))
+                return RedirectToAction("Index", "Student");
+
             return View();
         }
 

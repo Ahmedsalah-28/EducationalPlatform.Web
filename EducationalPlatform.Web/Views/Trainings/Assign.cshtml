@@ -1,0 +1,84 @@
+@model EducationalPlatform.ViewModels.AssignTrainingViewModel
+
+@{
+    ViewData["Title"] = "Assign Training";
+    bool isOnline = Model.TrainingType == "Online";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-1">Assign Training</h1>
+        <p class="text-muted mb-4">
+            @Model.TrainingTitle
+            (@(isOnline ? "Online" : "In-Class"))
+        </p>
+
+        <form asp-action="Assign" method="post">
+            <input type="hidden" asp-for="TrainingId" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="YearId" class="form-label"></label>
+                <select asp-for="YearId" asp-items="Model.Years" class="form-select" id="yearSelect">
+                    <option value="0">-- Select Year --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="GroupId" class="form-label"></label>
+                <select asp-for="GroupId" asp-items="Model.Groups" class="form-select" id="groupSelect">
+                    <option value="0">-- Select Group --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AssignedDate" class="form-label"></label>
+                <input asp-for="AssignedDate" type="date" class="form-control"
+                       value="@Model.AssignedDate.ToString("yyyy-MM-dd")" />
+            </div>
+
+            @if (isOnline)
+            {
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="StartDateTime" class="form-label"></label>
+                        <input asp-for="StartDateTime" type="datetime-local" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="EndDateTime" class="form-label"></label>
+                        <input asp-for="EndDateTime" type="datetime-local" class="form-control" />
+                    </div>
+                </div>
+            }
+
+            <button type="submit" class="btn btn-primary">Assign</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.getElementById("yearSelect").addEventListener("change", async function () {
+            const groupSelect = document.getElementById("groupSelect");
+            groupSelect.innerHTML = '<option value="0">-- Select Group --</option>';
+
+            if (!this.value || this.value === "0") return;
+
+            const response = await fetch(`/Trainings/GetGroupsByYear?yearId=${this.value}`);
+            if (!response.ok) return;
+
+            const groups = await response.json();
+
+            groups.forEach(group => {
+                const option = document.createElement("option");
+                option.value = group.id;
+                option.textContent = group.name;
+                groupSelect.appendChild(option);
+            });
+        });
+    </script>
+}
