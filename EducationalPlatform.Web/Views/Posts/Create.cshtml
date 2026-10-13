@@ -1,0 +1,89 @@
+﻿@model EducationalPlatform.ViewModels.PostCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Post";
+}
+
+<h2>Create New Post</h2>
+
+<form asp-action="Create"
+      method="post"
+      enctype="multipart/form-data">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly"
+         class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="YearId" class="form-label">
+            School Year
+        </label>
+
+        <select asp-for="YearId"
+                asp-items="ViewBag.Years"
+                class="form-select">
+        </select>
+
+        <span asp-validation-for="YearId"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">
+            Post Title
+        </label>
+
+        <input asp-for="Title" class="form-control" />
+
+        <span asp-validation-for="Title"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label">
+            Post Content
+        </label>
+
+        <textarea asp-for="Content"
+                  class="form-control"
+                  rows="6"></textarea>
+
+        <span asp-validation-for="Content"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Files" class="form-label">
+            Attachments
+        </label>
+
+        <input asp-for="Files"
+               type="file"
+               class="form-control"
+               multiple
+               accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" />
+
+        <div class="form-text">
+            You can select multiple files.
+            The maximum size is 100 MB per file.
+        </div>
+
+        <span asp-validation-for="Files"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Publish Post
+    </button>
+
+    <a asp-action="Index"
+       asp-route-yearId="@Model.YearId"
+       class="btn btn-secondary">
+        Back
+    </a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,110 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Post>
+
+@{
+    ViewData["Title"] = "Posts";
+}
+
+<h2>Posts</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["Error"]
+    </div>
+}
+
+<form asp-action="Index" method="get" class="mb-3">
+    <label class="form-label">Select School Year</label>
+
+    <select name="yearId"
+            class="form-select"
+            asp-items="ViewBag.Years"
+            onchange="this.form.submit()">
+        <option value="">All Available Years</option>
+    </select>
+</form>
+
+<a asp-action="Create"
+   asp-route-yearId="@ViewBag.SelectedYearId"
+   class="btn btn-primary mb-3">
+    Create New Post
+</a>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No posts were found for the selected school year.
+    </div>
+}
+else
+{
+    foreach (var post in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h4>@post.Title</h4>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit"
+                           asp-route-id="@post.Id"
+                           asp-route-returnYearId="@ViewBag.SelectedYearId"
+                           class="btn btn-sm btn-outline-primary">
+                            Edit
+                        </a>
+
+                        <form asp-action="Delete"
+                              asp-route-id="@post.Id"
+                              asp-route-returnYearId="@ViewBag.SelectedYearId"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to delete this post and all its attachments? This cannot be undone.');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-muted">
+                    School Year: @post.Year.Name
+                </p>
+
+                <p style="white-space: pre-wrap">@post.Content</p>
+
+                <small class="text-muted">
+                    Created At:
+                    @post.CreatedAt.ToLocalTime()
+                    .ToString("yyyy-MM-dd HH:mm")
+                </small>
+
+                @if (post.Attachments.Any())
+                {
+                    <hr />
+
+                    <h6>Attachments</h6>
+
+                    <ul>
+                        @foreach (var attachment in post.Attachments)
+                        {
+                            <li>
+                                <a href="@attachment.FilePath"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    @attachment.FileName
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+}

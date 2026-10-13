@@ -1,3 +1,26 @@
 ﻿@{
-    Layout = "_Layout";
+    var currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var adminControllers = new[]
+    {
+        "Admin",
+        "Years",
+        "Groups",
+        "Students",
+        "Assistants",
+        "GroupSchedules",
+        "ClassSessions",
+        "Attendance",
+        "Trainings",
+        "Exams",
+        "Quizzes",
+        "RegistrationRequests",
+        "Posts"
+    };
+
+    Layout = adminControllers.Contains(currentController)
+        ? "_AdminLayout"
+        : "_Layout";
 }
+

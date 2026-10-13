@@ -1,139 +1,105 @@
+
 @model EducationalPlatform.ViewModels.AdminDashboardViewModel
+
 @{
-    Layout = null;   // standalone page: no header / footer from _Layout
     ViewData["Title"] = "Admin Dashboard";
     var userName = User.Identity?.Name ?? "Admin";
-    var initials = userName.Length >= 2 ? userName.Substring(0, 2).ToUpper() : "AD";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
-</head>
-<body class="ad-body">
-    <div class="ad-shell">
 
-        <aside class="ad-sidebar">
-            <div class="ad-brand"><i class="bi bi-mortarboard-fill"></i><span>Edu Platform</span></div>
-            <ul class="ad-nav">
-                <li><a asp-controller="Admin" asp-action="Index" class="active"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
-                <li><a asp-controller="Years" asp-action="Index"><i class="bi bi-calendar3"></i> Years</a></li>
-                <li><a asp-controller="Groups" asp-action="Index"><i class="bi bi-people"></i> Groups</a></li>
-                <li><a asp-controller="Students" asp-action="Index"><i class="bi bi-mortarboard"></i> Students</a></li>
-                <li><a asp-controller="Assistants" asp-action="Index"><i class="bi bi-person-badge"></i> Assistants</a></li>
-                <li><a asp-controller="GroupSchedules" asp-action="Browse"><i class="bi bi-clock-history"></i> Group Schedules</a></li>
-                <li><a asp-controller="ClassSessions" asp-action="Browse"><i class="bi bi-easel"></i> Class Sessions</a></li>
-                <li><a asp-controller="Attendance" asp-action="Index"><i class="bi bi-check2-square"></i> Attendance</a></li>
-                <li><a asp-controller="Trainings" asp-action="Index"><i class="bi bi-journal-check"></i> Trainings</a></li>
-                <li><a asp-controller="Trainings" asp-action="Assignments"><i class="bi bi-clipboard-check"></i> Assignments &amp; Grades</a></li>
-                <li><a asp-controller="Exams" asp-action="Index"><i class="bi bi-file-earmark-text"></i> Exams</a></li>
-                <li><a asp-controller="Exams" asp-action="Assignments"><i class="bi bi-calendar-event"></i> Exam Schedule &amp; Grades</a></li>
-                <li><a asp-controller="Quizzes" asp-action="Index"><i class="bi bi-ui-checks"></i> Quizzes</a></li>
-                <li><a asp-controller="Quizzes" asp-action="Assignments"><i class="bi bi-list-check"></i> Quiz Assignments</a></li>
-                <li><a asp-controller="RegistrationRequests" asp-action="Index"><i class="bi bi-person-plus"></i> Registration Requests</a></li>
-            </ul>
+<section class="ad-welcome">
+    <h1>Welcome back, @userName</h1>
+    <p>Here's an overview of your platform.</p>
+</section>
 
-            <form class="ad-logout"
-                  asp-area="Identity"
-                  asp-page="/Account/Logout"
-                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
-                  method="post">
-                <button type="submit"><i class="bi bi-box-arrow-right"></i> Logout</button>
-            </form>
-        </aside>
-
-        <main class="ad-main">
-            <div class="ad-topbar">
-                <div class="ad-user">
-                    <div class="ad-avatar">@initials</div>
-                    <div class="ad-user-meta">
-                        <div class="ad-user-name">@userName</div>
-                        <div class="ad-user-role">Administrator</div>
-                    </div>
-                </div>
-            </div>
-
-            <section class="ad-welcome">
-                <h1>Welcome back, @userName</h1>
-                <p>Here's an overview of your platform.</p>
-            </section>
-
-            <div class="ad-stats">
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-calendar3"></i></div>
-                    <div class="ad-stat-label">Total Years</div>
-                    <div class="ad-stat-num">@Model.TotalYears</div>
-                    <a class="ad-link" asp-controller="Years" asp-action="Index">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-people"></i></div>
-                    <div class="ad-stat-label">Total Groups</div>
-                    <div class="ad-stat-num">@Model.TotalGroups</div>
-                    <a class="ad-link" asp-controller="Groups" asp-action="Index">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-mortarboard"></i></div>
-                    <div class="ad-stat-label">Total Students</div>
-                    <div class="ad-stat-num">@Model.TotalStudents</div>
-                    <a class="ad-link" asp-controller="Students" asp-action="Index">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-person-badge"></i></div>
-                    <div class="ad-stat-label">Total Assistants</div>
-                    <div class="ad-stat-num">@Model.TotalAssistants</div>
-                    <a class="ad-link" asp-controller="Assistants" asp-action="Index">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-clock-history"></i></div>
-                    <div class="ad-stat-label">Group Schedules</div>
-                    <div class="ad-stat-num">@Model.TotalSchedules</div>
-                    <a class="ad-link" asp-controller="GroupSchedules" asp-action="Browse">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-easel"></i></div>
-                    <div class="ad-stat-label">Class Sessions</div>
-                    <div class="ad-stat-num">@Model.TotalSessions</div>
-                    <a class="ad-link" asp-controller="ClassSessions" asp-action="Browse">View all →</a>
-                </div>
-                <div class="ad-stat">
-                    <div class="ad-icon"><i class="bi bi-person-plus"></i></div>
-                    <div class="ad-stat-label">Pending Requests</div>
-                    <div class="ad-stat-num">@Model.PendingRequests</div>
-                    <a class="ad-link" asp-controller="RegistrationRequests" asp-action="Index">Review →</a>
-                </div>
-            </div>
-
-            <section class="ad-panel">
-                <div class="ad-panel-head">
-                    <h2>Today's Sessions</h2>
-                    <a class="ad-link" asp-controller="ClassSessions" asp-action="Browse">View all →</a>
-                </div>
-
-                @if (!Model.TodaySessions.Any())
-                {
-                    <p class="ad-empty">No sessions scheduled for today.</p>
-                }
-                else
-                {
-                    foreach (var s in Model.TodaySessions)
-                    {
-                        <div class="ad-row">
-                            <div class="ad-icon sm"><i class="bi bi-easel"></i></div>
-                            <div class="ad-row-main">
-                                <div class="ad-row-title">@s.GroupName</div>
-                                <div class="ad-row-sub">@s.YearName · @s.Status</div>
-                            </div>
-                            <div class="ad-row-time"><i class="bi bi-clock"></i> @s.Time</div>
-                            <a class="ad-btn" asp-controller="Attendance" asp-action="Take" asp-route-id="@s.SessionId">Take attendance</a>
-                        </div>
-                    }
-                }
-            </section>
-        </main>
+<div class="ad-stats">
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-calendar3"></i></div>
+        <div class="ad-stat-label">Total Years</div>
+        <div class="ad-stat-num">@Model.TotalYears</div>
+        <a class="ad-link" asp-controller="Years" asp-action="Index">View all →</a>
     </div>
-</body>
-</html>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-people"></i></div>
+        <div class="ad-stat-label">Total Groups</div>
+        <div class="ad-stat-num">@Model.TotalGroups</div>
+        <a class="ad-link" asp-controller="Groups" asp-action="Index">View all →</a>
+    </div>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-mortarboard"></i></div>
+        <div class="ad-stat-label">Total Students</div>
+        <div class="ad-stat-num">@Model.TotalStudents</div>
+        <a class="ad-link" asp-controller="Students" asp-action="Index">View all →</a>
+    </div>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-person-badge"></i></div>
+        <div class="ad-stat-label">Total Assistants</div>
+        <div class="ad-stat-num">@Model.TotalAssistants</div>
+        <a class="ad-link" asp-controller="Assistants" asp-action="Index">View all →</a>
+    </div>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-clock-history"></i></div>
+        <div class="ad-stat-label">Group Schedules</div>
+        <div class="ad-stat-num">@Model.TotalSchedules</div>
+        <a class="ad-link" asp-controller="GroupSchedules" asp-action="Browse">View all →</a>
+    </div>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-easel"></i></div>
+        <div class="ad-stat-label">Class Sessions</div>
+        <div class="ad-stat-num">@Model.TotalSessions</div>
+        <a class="ad-link" asp-controller="ClassSessions" asp-action="Browse">View all →</a>
+    </div>
+
+    <div class="ad-stat">
+        <div class="ad-icon"><i class="bi bi-person-plus"></i></div>
+        <div class="ad-stat-label">Pending Requests</div>
+        <div class="ad-stat-num">@Model.PendingRequests</div>
+        <a class="ad-link" asp-controller="RegistrationRequests" asp-action="Index">Review →</a>
+    </div>
+</div>
+
+<section class="ad-panel">
+    <div class="ad-panel-head">
+        <h2>Today's Sessions</h2>
+        <a class="ad-link" asp-controller="ClassSessions" asp-action="Browse">View all →</a>
+    </div>
+
+    @if (Model.TodaySessions == null || !Model.TodaySessions.Any())
+    {
+        <p class="ad-empty">No sessions scheduled for today.</p>
+    }
+    else
+    {
+        foreach (var s in Model.TodaySessions)
+        {
+            <div class="ad-row">
+                <div class="ad-icon sm">
+                    <i class="bi bi-easel"></i>
+                </div>
+
+                <div class="ad-row-main">
+                    <div class="ad-row-title">@s.GroupName</div>
+                    <div class="ad-row-sub">@s.YearName · @s.Status</div>
+                </div>
+
+                <div class="ad-row-time">
+                    <i class="bi bi-clock"></i> @s.Time
+                </div>
+
+                @if (s.Status != "Cancelled")
+                {
+                    <a class="ad-btn"
+                       asp-controller="Attendance"
+                       asp-action="Take"
+                       asp-route-id="@s.SessionId">
+                        Take attendance
+                    </a>
+                }
+            </div>
+        }
+    }
+</section>
