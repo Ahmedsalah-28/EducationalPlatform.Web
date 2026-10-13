@@ -12,6 +12,10 @@
     {
         Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_AssistantLayout";
     }
+    else if (currentController == "Student" && User.IsInRole("Student"))
+    {
+        Layout = "_StudentLayout";
+    }
     else
     {
         Layout = "_Layout";

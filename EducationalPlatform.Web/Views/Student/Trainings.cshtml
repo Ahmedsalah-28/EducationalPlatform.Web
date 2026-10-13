@@ -1,0 +1,61 @@
+﻿@model IEnumerable<EducationalPlatform.ViewModels.StudentTrainingRow>
+@{
+    ViewData["Title"] = "My Trainings";
+    string Badge(string status) => status switch
+    {
+        "Passed" or "Graded" => "bg-success",
+        "Failed" or "Missed" => "bg-danger",
+        "Open" or "In progress" => "bg-primary",
+        "Upcoming" => "bg-info text-dark",
+        _ => "bg-secondary"
+    };
+
+    string ScoreText(decimal? score, decimal max) =>
+        score.HasValue && max > 0 ? $"{score.Value:0.##} / {max:0.##}" : "—";
+}
+
+<section class="ad-welcome">
+    <h1>My Trainings</h1>
+    <p>Your trainings and the scores you received.</p>
+</section>
+
+<section class="ad-panel">
+    @if (!Model.Any())
+    {
+        <p class="ad-empty">No trainings have been assigned to you yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Training</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>My Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@t.Title</strong>
+                                @if (!string.IsNullOrWhiteSpace(t.Description))
+                                {
+                                    <div class="small text-muted">@t.Description</div>
+                                }
+                            </td>
+                            <td>@(t.Type == "InClass" ? "In-Class" : t.Type)</td>
+                            <td>@t.AssignedDate.ToString("dd MMM yyyy")</td>
+                            <td><strong>@ScoreText(t.Score, t.MaxScore)</strong></td>
+                            <td><span class="badge @Badge(t.Status)">@t.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -1,0 +1,90 @@
+﻿@{
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Student Dashboard";
+    var userName = ViewData["StudentName"]?.ToString() ?? User.Identity?.Name ?? "Student";
+    var initials = userName.Length >= 2
+        ? userName.Substring(0, 2).ToUpper()
+        : "ST";
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    string ActiveController(string controller)
+    {
+        return currentController == controller ? "active" : "";
+    }
+
+    string ActiveAction(string controller, string action)
+    {
+        return currentController == controller && currentAction == action
+            ? "active"
+            : "";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@pageTitle - Edu Platform</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body class="ad-body">
+    <div class="ad-shell">
+
+        <aside class="ad-sidebar">
+            <div class="ad-brand">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Edu Platform</span>
+            </div>
+
+            <ul class="ad-nav">
+                <li><a asp-controller="Student" asp-action="Index" class="@ActiveAction("Student", "Index")"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+                <li><a asp-controller="Student" asp-action="Attendance" class="@ActiveAction("Student", "Attendance")"><i class="bi bi-check2-square"></i> Attendance</a></li>
+                <li><a asp-controller="Student" asp-action="Exams" class="@ActiveAction("Student", "Exams")"><i class="bi bi-file-earmark-text"></i> Exams</a></li>
+                <li><a asp-controller="Student" asp-action="Quizzes" class="@ActiveAction("Student", "Quizzes")"><i class="bi bi-ui-checks"></i> Quizzes</a></li>
+                <li><a asp-controller="Student" asp-action="Trainings" class="@ActiveAction("Student", "Trainings")"><i class="bi bi-journal-check"></i> Trainings</a></li>
+                <li><a asp-controller="Student" asp-action="Posts" class="@ActiveAction("Student", "Posts")"><i class="bi bi-megaphone"></i> Posts</a></li>
+            </ul>
+
+            <form class="ad-logout"
+                  asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                  method="post">
+
+                <button type="submit">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </aside>
+
+        <main class="ad-main">
+            <div class="ad-topbar">
+                <div class="ad-user">
+                    <div class="ad-avatar">@initials</div>
+
+                    <div class="ad-user-meta">
+                        <div class="ad-user-name">@userName</div>
+                        <div class="ad-user-role">
+                            Student
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ad-page-content">
+                @RenderBody()
+            </div>
+        </main>
+
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

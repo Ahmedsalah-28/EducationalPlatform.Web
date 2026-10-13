@@ -1,0 +1,42 @@
+﻿@model IEnumerable<EducationalPlatform.Models.Post>
+@{
+    ViewData["Title"] = "Posts";
+}
+
+<section class="ad-welcome">
+    <h1>Posts</h1>
+    <p>Announcements and files shared with your year.</p>
+</section>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">There are no posts for your year yet.</div>
+}
+else
+{
+    foreach (var post in Model)
+    {
+        <section class="ad-panel mb-4">
+            <div class="ad-panel-head">
+                <h2>@post.Title</h2>
+                <span class="text-muted small">@post.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+            </div>
+
+            <p style="white-space: pre-wrap">@post.Content</p>
+
+            @if (post.Attachments.Any())
+            {
+                <hr />
+                <h6>Attachments</h6>
+                <ul class="mb-0">
+                    @foreach (var attachment in post.Attachments)
+                    {
+                        <li>
+                            <a href="@attachment.FilePath" target="_blank" rel="noopener noreferrer">@attachment.FileName</a>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+}

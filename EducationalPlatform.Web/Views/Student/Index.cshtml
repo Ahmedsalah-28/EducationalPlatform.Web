@@ -1,105 +1,179 @@
-﻿@using EducationalPlatform.Models
-
+﻿@model EducationalPlatform.ViewModels.StudentDashboardViewModel
 @{
     ViewData["Title"] = "Student Dashboard";
+    ViewData["StudentName"] = Model.StudentName;
 
-    var enrollment = ViewBag.CurrentEnrollment as Enrollment;
+    string FormatGrade(decimal score, decimal max) =>
+        max == 0 ? "Pending" : $"{score:0.##} / {max:0.##}";
+
+    string Snippet(string text) =>
+        text.Length > 140 ? text.Substring(0, 140) + "…" : text;
 }
 
-<h2>Welcome, @ViewBag.StudentName!</h2>
+<section class="ad-welcome">
+    <h1>Welcome back, @Model.StudentName</h1>
+    @if (Model.HasEnrollment)
+    {
+        <p>@Model.YearName · @Model.GroupName</p>
+    }
+    else
+    {
+        <p>Here is an overview of your attendance, exams, quizzes and grades.</p>
+    }
+</section>
 
-@if (enrollment != null)
+@if (!Model.HasEnrollment)
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5>My Current Enrollment</h5>
-            <p>
-                <strong>Year:</strong>
-                @enrollment.Group.Year.Name
-            </p>
-            <p>
-                <strong>Group:</strong>
-                @enrollment.Group.Name
-            </p>
-        </div>
-    </div>
+    <div class="alert alert-info">You do not have an active enrollment yet.</div>
 }
 else
 {
-    <div class="alert alert-info">
-        You do not have an active enrollment.
+    <div class="ad-stats">
+        <div class="ad-stat">
+            <div class="ad-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="ad-stat-label">Attendance Rate</div>
+            <div class="ad-stat-num">@(Model.AttendanceRate.HasValue ? Model.AttendanceRate + "%" : "—")</div>
+            <a class="ad-link" asp-controller="Student" asp-action="Attendance">History →</a>
+        </div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-check-circle"></i></div><div class="ad-stat-label">Present</div><div class="ad-stat-num">@Model.PresentCount</div></div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-x-circle"></i></div><div class="ad-stat-label">Absent</div><div class="ad-stat-num">@Model.AbsentCount</div></div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-clock-history"></i></div><div class="ad-stat-label">Late</div><div class="ad-stat-num">@Model.LateCount</div></div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-file-earmark-check"></i></div><div class="ad-stat-label">Excused</div><div class="ad-stat-num">@Model.ExcusedCount</div></div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-question-circle"></i></div><div class="ad-stat-label">Not Recorded</div><div class="ad-stat-num">@Model.NotRecordedCount</div></div>
+        <div class="ad-stat"><div class="ad-icon"><i class="bi bi-slash-circle"></i></div><div class="ad-stat-label">Cancelled Sessions</div><div class="ad-stat-num">@Model.CancelledCount</div></div>
+    </div>
+
+    <section class="ad-panel mb-3">
+        <div class="ad-panel-head"><h2>Next Session</h2></div>
+        @if (Model.NextSessionDate.HasValue)
+        {
+            <div class="ad-row">
+                <div class="ad-icon sm"><i class="bi bi-calendar-event"></i></div>
+                <div class="ad-row-main">
+                    <div class="ad-row-title">@Model.NextSessionDate.Value.ToString("dddd, dd MMM yyyy")</div>
+                    <div class="ad-row-sub">@Model.YearName · @Model.GroupName</div>
+                </div>
+                <div class="ad-row-time">
+                    <i class="bi bi-clock"></i>
+                    @DateTime.Today.Add(Model.NextSessionStart!.Value).ToString("hh:mm tt") - @DateTime.Today.Add(Model.NextSessionEnd!.Value).ToString("hh:mm tt")
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="ad-empty">There are no upcoming sessions scheduled for your group.</p>
+        }
+    </section>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <section class="ad-panel h-100">
+                <div class="ad-panel-head"><h2>Upcoming Exams</h2><a class="ad-link" asp-controller="Student" asp-action="Exams">All exams →</a></div>
+                @if (!Model.UpcomingExams.Any())
+                {
+                    <p class="ad-empty">No upcoming exams.</p>
+                }
+                else
+                {
+                    foreach (var e in Model.UpcomingExams)
+                    {
+                        <div class="ad-row">
+                            <div class="ad-icon sm"><i class="bi bi-file-earmark-text"></i></div>
+                            <div class="ad-row-main"><div class="ad-row-title">@e.Title</div></div>
+                            <div class="ad-row-time">
+                                <i class="bi bi-calendar-event"></i> @e.Start.ToString("dd MMM yyyy") · @e.Start.ToString("hh:mm tt") - @e.End.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                    }
+                }
+            </section>
+        </div>
+
+        <div class="col-lg-6">
+            <section class="ad-panel h-100">
+                <div class="ad-panel-head"><h2>Quizzes</h2><a class="ad-link" asp-controller="Student" asp-action="Quizzes">All quizzes →</a></div>
+                @if (!Model.UpcomingQuizzes.Any())
+                {
+                    <p class="ad-empty">No open or upcoming quizzes.</p>
+                }
+                else
+                {
+                    foreach (var q in Model.UpcomingQuizzes)
+                    {
+                        <div class="ad-row">
+                            <div class="ad-icon sm"><i class="bi bi-ui-checks"></i></div>
+                            <div class="ad-row-main">
+                                <div class="ad-row-title">
+                                    @q.Title
+                                    @if (q.Submitted)
+                                    {
+                                        <span class="badge bg-secondary">Submitted</span>
+                                    }
+                                    else if (q.IsOpen)
+                                    {
+                                        <span class="badge bg-success">Open now</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark">Upcoming</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="ad-row-time">
+                                <i class="bi bi-calendar-event"></i> @q.Start.ToString("dd MMM hh:mm tt") → @q.End.ToString("dd MMM hh:mm tt")
+                            </div>
+                        </div>
+                    }
+                }
+            </section>
+        </div>
+
+        <div class="col-lg-6">
+            <section class="ad-panel h-100">
+                <div class="ad-panel-head"><h2>Latest Grades</h2></div>
+                @if (!Model.LatestGrades.Any())
+                {
+                    <p class="ad-empty">No grades have been recorded yet.</p>
+                }
+                else
+                {
+                    foreach (var g in Model.LatestGrades)
+                    {
+                        <div class="ad-row">
+                            <div class="ad-icon sm"><i class="bi bi-award"></i></div>
+                            <div class="ad-row-main">
+                                <div class="ad-row-title">@g.Title <span class="badge bg-light text-dark">@g.Kind</span></div>
+                                <div class="ad-row-sub">@g.Date.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div class="ad-row-time"><strong>@FormatGrade(g.Score, g.MaxScore)</strong></div>
+                        </div>
+                    }
+                }
+            </section>
+        </div>
+
+        <div class="col-lg-6">
+            <section class="ad-panel h-100">
+                <div class="ad-panel-head"><h2>Latest Posts</h2><a class="ad-link" asp-controller="Student" asp-action="Posts">All posts →</a></div>
+                @if (!Model.LatestPosts.Any())
+                {
+                    <p class="ad-empty">No posts for your year yet.</p>
+                }
+                else
+                {
+                    foreach (var p in Model.LatestPosts)
+                    {
+                        <div class="ad-row">
+                            <div class="ad-icon sm"><i class="bi bi-megaphone"></i></div>
+                            <div class="ad-row-main">
+                                <div class="ad-row-title">@p.Title</div>
+                                <div class="ad-row-sub">@Snippet(p.Content)</div>
+                            </div>
+                            <div class="ad-row-time">@p.CreatedAt.ToString("dd MMM yyyy")</div>
+                        </div>
+                    }
+                }
+            </section>
+        </div>
     </div>
 }
-
-<h4>Attendance Summary</h4>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6>Total Recorded Sessions</h6>
-                <h3>@ViewBag.TotalSessions</h3>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6>Present</h6>
-                <h3>@ViewBag.PresentCount</h3>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6>Absent</h6>
-                <h3>@ViewBag.AbsentCount</h3>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6>Late</h6>
-                <h3>@ViewBag.LateCount</h3>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h6>Excused</h6>
-                <h3>@ViewBag.ExcusedCount</h3>
-            </div>
-        </div>
-    </div>
-
-<div class="col-md-4">
-    <div class="card">
-        <div class="card-body">
-            <h6>Not Recorded</h6>
-            <h3>@ViewBag.NotRecordedCount</h3>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-4">
-    <div class="card">
-        <div class="card-body">
-            <h6>Cancelled Sessions</h6>
-            <h3>@ViewBag.CancelledCount</h3>
-        </div>
-    </div>
-</div>
-</div>
-
-<a asp-controller="Student"
-   asp-action="Attendance"
-   class="btn btn-primary">
-    View Attendance History
-</a>

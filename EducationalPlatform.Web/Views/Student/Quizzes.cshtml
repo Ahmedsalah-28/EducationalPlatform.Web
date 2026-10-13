@@ -1,0 +1,64 @@
+﻿@model IEnumerable<EducationalPlatform.ViewModels.StudentQuizRow>
+@{
+    ViewData["Title"] = "My Quizzes";
+    string Badge(string status) => status switch
+    {
+        "Passed" or "Graded" => "bg-success",
+        "Failed" or "Missed" => "bg-danger",
+        "Open" or "In progress" => "bg-primary",
+        "Upcoming" => "bg-info text-dark",
+        _ => "bg-secondary"
+    };
+
+    string ScoreText(decimal? score, decimal max) =>
+        score.HasValue && max > 0 ? $"{score.Value:0.##} / {max:0.##}" : "—";
+}
+
+<section class="ad-welcome">
+    <h1>My Quizzes</h1>
+    <p>Your quizzes, their availability, and the scores you received.</p>
+</section>
+
+<section class="ad-panel">
+    @if (!Model.Any())
+    {
+        <p class="ad-empty">No quizzes have been assigned to you yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Quiz</th>
+                        <th>Available period</th>
+                        <th>Duration</th>
+                        <th>My Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var q in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@q.Title</strong>
+                                @if (!string.IsNullOrWhiteSpace(q.Description))
+                                {
+                                    <div class="small text-muted">@q.Description</div>
+                                }
+                            </td>
+                            <td>
+                                @q.Start.ToString("dd MMM yyyy hh:mm tt")<br />
+                                to @q.End.ToString("dd MMM yyyy hh:mm tt")
+                            </td>
+                            <td>@q.DurationMinutes min</td>
+                            <td><strong>@ScoreText(q.Score, q.MaxScore)</strong></td>
+                            <td><span class="badge @Badge(q.Status)">@q.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
