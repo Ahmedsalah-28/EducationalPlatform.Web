@@ -23,15 +23,65 @@ namespace EducationalPlatform.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        // GET: /Students?yearId=1&groupId=2
+        public async Task<IActionResult> Index(int? yearId, int? groupId)
         {
-            var students = await _context.Students
+            // Ignore a group that does not belong to the selected year
+            if (yearId.HasValue && groupId.HasValue)
+            {
+                var groupInYear = await _context.Groups
+                    .AnyAsync(g => g.Id == groupId.Value && g.YearId == yearId.Value);
+
+                if (!groupInYear)
+                    groupId = null;
+            }
+
+            IQueryable<Student> query = _context.Students
                 .Include(s => s.ApplicationUser)
                 .Include(s => s.Enrollments)
                     .ThenInclude(e => e.Group)
-                        .ThenInclude(g => g.Year)
+                        .ThenInclude(g => g.Year);
+
+            // Filter by the student's ACTIVE enrollment
+            if (groupId.HasValue)
+            {
+                query = query.Where(s => s.Enrollments.Any(e =>
+                    e.Status == "Active" && e.GroupId == groupId.Value));
+            }
+            else if (yearId.HasValue)
+            {
+                query = query.Where(s => s.Enrollments.Any(e =>
+                    e.Status == "Active" && e.Group.YearId == yearId.Value));
+            }
+
+            var students = await query
                 .OrderBy(s => s.FullName)
                 .ToListAsync();
+
+            // Filter dropdowns
+            var years = await _context.Years
+                .OrderBy(y => y.Name)
+                .ToListAsync();
+
+            ViewBag.Years = new SelectList(years, "Id", "Name", yearId);
+
+            if (yearId.HasValue)
+            {
+                var groups = await _context.Groups
+                    .Where(g => g.YearId == yearId.Value &&
+                                (g.IsActive || g.Id == groupId))
+                    .OrderBy(g => g.Name)
+                    .ToListAsync();
+
+                ViewBag.Groups = new SelectList(groups, "Id", "Name", groupId);
+            }
+            else
+            {
+                ViewBag.Groups = new SelectList(Enumerable.Empty<SelectListItem>());
+            }
+
+            ViewBag.SelectedYearId = yearId;
+            ViewBag.SelectedGroupId = groupId;
 
             return View(students);
         }

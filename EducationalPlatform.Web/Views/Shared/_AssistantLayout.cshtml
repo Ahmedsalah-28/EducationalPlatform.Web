@@ -1,0 +1,93 @@
+@{
+    var pageTitle = ViewData["Title"]?.ToString() ?? "Assistant Dashboard";
+    var userName = User.Identity?.Name ?? "Assistant";
+    var initials = userName.Length >= 2
+        ? userName.Substring(0, 2).ToUpper()
+        : "AS";
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    string ActiveController(string controller)
+    {
+        return currentController == controller ? "active" : "";
+    }
+
+    string ActiveAction(string controller, string action)
+    {
+        return currentController == controller && currentAction == action
+            ? "active"
+            : "";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@pageTitle - Edu Platform</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body class="ad-body">
+    <div class="ad-shell">
+
+        <aside class="ad-sidebar">
+            <div class="ad-brand">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Edu Platform</span>
+            </div>
+
+            <ul class="ad-nav">
+                <li><a asp-controller="Assistants" asp-action="Dashboard" class="@ActiveAction("Assistants", "Dashboard")"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+                <li><a asp-controller="Attendance" asp-action="Index" class="@ActiveController("Attendance")"><i class="bi bi-check2-square"></i> Attendance</a></li>
+                <li><a asp-controller="Trainings" asp-action="Index" class="@ActiveController("Trainings")"><i class="bi bi-journal-check"></i> Trainings</a></li>
+                <li><a asp-controller="Trainings" asp-action="Assignments" class="@ActiveAction("Trainings", "Assignments")"><i class="bi bi-clipboard-check"></i> Training Grades</a></li>
+                <li><a asp-controller="Exams" asp-action="Index" class="@ActiveController("Exams")"><i class="bi bi-file-earmark-text"></i> Exams</a></li>
+                <li><a asp-controller="Exams" asp-action="Assignments" class="@ActiveAction("Exams", "Assignments")"><i class="bi bi-calendar-event"></i> Exam Schedule &amp; Grades</a></li>
+                <li><a asp-controller="Quizzes" asp-action="Index" class="@ActiveController("Quizzes")"><i class="bi bi-ui-checks"></i> Quizzes</a></li>
+                <li><a asp-controller="Quizzes" asp-action="Assignments" class="@ActiveAction("Quizzes", "Assignments")"><i class="bi bi-list-check"></i> Quiz Assignments</a></li>
+                <li><a asp-controller="Posts" asp-action="Index" class="@ActiveController("Posts")"><i class="bi bi-megaphone"></i> Posts</a></li>
+            </ul>
+
+            <form class="ad-logout"
+                  asp-area="Identity"
+                  asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                  method="post">
+
+                <button type="submit">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </aside>
+
+        <main class="ad-main">
+            <div class="ad-topbar">
+                <div class="ad-user">
+                    <div class="ad-avatar">@initials</div>
+
+                    <div class="ad-user-meta">
+                        <div class="ad-user-name">@userName</div>
+                        <div class="ad-user-role">
+                            Assistant
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ad-page-content">
+                @RenderBody()
+            </div>
+        </main>
+
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

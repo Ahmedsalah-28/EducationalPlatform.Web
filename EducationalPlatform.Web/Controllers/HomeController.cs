@@ -13,7 +13,7 @@ namespace EducationalPlatform.Web.Controllers
                 return RedirectToAction("Index", "Admin");
 
             if (User.IsInRole("Assistant"))
-                return RedirectToAction("Index", "AssistantDashboard");
+                return RedirectToAction("Dashboard", "Assistants");
 
             if (User.IsInRole("Student"))
                 return RedirectToAction("Index", "Student");

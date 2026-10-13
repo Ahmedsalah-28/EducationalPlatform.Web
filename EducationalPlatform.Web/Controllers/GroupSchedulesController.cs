@@ -28,6 +28,7 @@ namespace EducationalPlatform.Controllers
                 .OrderBy(s => s.Group.Year.Name)
                 .ThenBy(s => s.Group.Name)
                 .ThenBy(s => s.DayOfWeek)
+                .ThenBy(s => s.StartTime)
                 .ToListAsync();
 
             return View(schedules);

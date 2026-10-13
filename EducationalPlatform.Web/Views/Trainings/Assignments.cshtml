@@ -19,9 +19,11 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
+<partial name="_YearGroupFilter" model="Model.Count()" />
+
 @if (!Model.Any())
 {
-    <div class="alert alert-info">No training assignments yet.</div>
+    <div class="alert alert-info">No training assignments found.</div>
 }
 else
 {

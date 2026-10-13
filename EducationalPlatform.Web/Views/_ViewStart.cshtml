@@ -1,26 +1,19 @@
-﻿@{
-    var currentController =
-        ViewContext.RouteData.Values["controller"]?.ToString();
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 
-    var adminControllers = new[]
+    var staffControllers = new[]
     {
-        "Admin",
-        "Years",
-        "Groups",
-        "Students",
-        "Assistants",
-        "GroupSchedules",
-        "ClassSessions",
-        "Attendance",
-        "Trainings",
-        "Exams",
-        "Quizzes",
-        "RegistrationRequests",
-        "Posts"
+        "Admin", "Years", "Groups", "Students", "Assistants", "GroupSchedules",
+        "ClassSessions", "Attendance", "Trainings", "Exams", "Quizzes",
+        "RegistrationRequests", "Posts"
     };
 
-    Layout = adminControllers.Contains(currentController)
-        ? "_AdminLayout"
-        : "_Layout";
+    if (staffControllers.Contains(currentController))
+    {
+        Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_AssistantLayout";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
-

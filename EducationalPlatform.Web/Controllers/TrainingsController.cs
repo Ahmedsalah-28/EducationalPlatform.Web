@@ -146,14 +146,18 @@ namespace EducationalPlatform.Controllers
         // =====================================================
 
         // All assignments the current user is allowed to see
-        public async Task<IActionResult> Assignments()
+        public async Task<IActionResult> Assignments(int? yearId, int? groupId)
         {
             var allowed = await GetAllowedYearIdsAsync();
+            (yearId, groupId) = await LoadYearGroupFilterAsync(allowed, yearId, groupId);
 
             var query = _context.TrainingAssignments.AsQueryable();
 
             if (allowed != null)
                 query = query.Where(a => allowed.Contains(a.Group.YearId));
+
+            if (groupId.HasValue) query = query.Where(a => a.GroupId == groupId.Value);
+            else if (yearId.HasValue) query = query.Where(a => a.Group.YearId == yearId.Value);
 
             var items = await query
                 .OrderByDescending(a => a.AssignedDate)
@@ -447,6 +451,54 @@ namespace EducationalPlatform.Controllers
                 .Where(ay => ay.AssistantId == assistant.Id)
                 .Select(ay => ay.YearId)
                 .ToListAsync();
+        }
+
+        // Fills the Year / Group filter dropdowns (ViewBag) and returns the cleaned filter values.
+        // Assistants only see their assigned years; a group that is not in the chosen year is ignored.
+        private async Task<(int? YearId, int? GroupId)> LoadYearGroupFilterAsync(
+            List<int>? allowed, int? yearId, int? groupId)
+        {
+            var yearsQuery = _context.Years.AsQueryable();
+            if (allowed != null)
+                yearsQuery = yearsQuery.Where(y => allowed.Contains(y.Id));
+
+            var years = await yearsQuery.OrderBy(y => y.Name).ToListAsync();
+
+            if (!yearId.HasValue || !years.Any(y => y.Id == yearId.Value))
+            {
+                yearId = null;
+                groupId = null;
+            }
+
+            if (yearId.HasValue && groupId.HasValue)
+            {
+                var groupInYear = await _context.Groups
+                    .AnyAsync(g => g.Id == groupId.Value && g.YearId == yearId.Value);
+
+                if (!groupInYear)
+                    groupId = null;
+            }
+
+            ViewBag.Years = new SelectList(years, "Id", "Name", yearId);
+
+            if (yearId.HasValue)
+            {
+                var groups = await _context.Groups
+                    .Where(g => g.YearId == yearId.Value && (g.IsActive || g.Id == groupId))
+                    .OrderBy(g => g.Name)
+                    .ToListAsync();
+
+                ViewBag.Groups = new SelectList(groups, "Id", "Name", groupId);
+            }
+            else
+            {
+                ViewBag.Groups = new SelectList(Enumerable.Empty<SelectListItem>());
+            }
+
+            ViewBag.SelectedYearId = yearId;
+            ViewBag.SelectedGroupId = groupId;
+
+            return (yearId, groupId);
         }
 
         private static bool CanAccessYear(List<int>? allowed, int yearId) =>

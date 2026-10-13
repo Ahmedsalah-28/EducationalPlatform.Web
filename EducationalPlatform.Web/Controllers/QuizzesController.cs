@@ -52,9 +52,14 @@ namespace EducationalPlatform.Controllers
             await _context.SaveChangesAsync(); TempData["Success"] = "Quiz updated successfully."; return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Assignments()
+        public async Task<IActionResult> Assignments(int? yearId, int? groupId)
         {
-            var allowed = await GetAllowedYearIdsAsync(); var query = _context.QuizAssignments.AsNoTracking().AsQueryable(); if (allowed != null) query = query.Where(a => allowed.Contains(a.Group.YearId));
+            var allowed = await GetAllowedYearIdsAsync();
+            (yearId, groupId) = await LoadYearGroupFilterAsync(allowed, yearId, groupId);
+            var query = _context.QuizAssignments.AsNoTracking().AsQueryable();
+            if (allowed != null) query = query.Where(a => allowed.Contains(a.Group.YearId));
+            if (groupId.HasValue) query = query.Where(a => a.GroupId == groupId.Value);
+            else if (yearId.HasValue) query = query.Where(a => a.Group.YearId == yearId.Value);
             var items = await query.OrderBy(a => a.StartDateTime).Select(a => new QuizAssignmentListItem { Id = a.Id, QuizTitle = a.Quiz.Title, YearName = a.Group.Year.Name, GroupName = a.Group.Name, StartDateTime = a.StartDateTime, EndDateTime = a.EndDateTime, MaximumGrade = a.Quiz.MaximumGrade, SubmittedCount = a.QuizAttempts.Count(t => t.SubmittedAt != null), StudentCount = a.Group.Enrollments.Count(e => e.Status == "Active") }).ToListAsync(); return View(items);
         }
         public async Task<IActionResult> Assign(int? id)
@@ -101,6 +106,54 @@ namespace EducationalPlatform.Controllers
         {
             if (User.IsInRole("Admin")) return null; var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); if (string.IsNullOrWhiteSpace(userId)) return new List<int>(); var assistant = await _context.Assistants.FirstOrDefaultAsync(a => a.ApplicationUserId == userId && a.Status == "Active"); return assistant == null ? new List<int>() : await _context.AssistantYears.Where(a => a.AssistantId == assistant.Id).Select(a => a.YearId).ToListAsync();
         }
+        // Fills the Year / Group filter dropdowns (ViewBag) and returns the cleaned filter values.
+        // Assistants only see their assigned years; a group that is not in the chosen year is ignored.
+        private async Task<(int? YearId, int? GroupId)> LoadYearGroupFilterAsync(
+            List<int>? allowed, int? yearId, int? groupId)
+        {
+            var yearsQuery = _context.Years.AsQueryable();
+            if (allowed != null)
+                yearsQuery = yearsQuery.Where(y => allowed.Contains(y.Id));
+
+            var years = await yearsQuery.OrderBy(y => y.Name).ToListAsync();
+
+            if (!yearId.HasValue || !years.Any(y => y.Id == yearId.Value))
+            {
+                yearId = null;
+                groupId = null;
+            }
+
+            if (yearId.HasValue && groupId.HasValue)
+            {
+                var groupInYear = await _context.Groups
+                    .AnyAsync(g => g.Id == groupId.Value && g.YearId == yearId.Value);
+
+                if (!groupInYear)
+                    groupId = null;
+            }
+
+            ViewBag.Years = new SelectList(years, "Id", "Name", yearId);
+
+            if (yearId.HasValue)
+            {
+                var groups = await _context.Groups
+                    .Where(g => g.YearId == yearId.Value && (g.IsActive || g.Id == groupId))
+                    .OrderBy(g => g.Name)
+                    .ToListAsync();
+
+                ViewBag.Groups = new SelectList(groups, "Id", "Name", groupId);
+            }
+            else
+            {
+                ViewBag.Groups = new SelectList(Enumerable.Empty<SelectListItem>());
+            }
+
+            ViewBag.SelectedYearId = yearId;
+            ViewBag.SelectedGroupId = groupId;
+
+            return (yearId, groupId);
+        }
+
         private static bool CanAccessYear(List<int>? allowed, int yearId) => allowed == null || allowed.Contains(yearId);
         private async Task<bool> CanManageQuizAsync(Quiz quiz)
         {

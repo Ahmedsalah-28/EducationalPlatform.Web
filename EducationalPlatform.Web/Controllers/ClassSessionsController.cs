@@ -28,7 +28,7 @@ namespace EducationalPlatform.Controllers
                     .ThenInclude(g => g.Year)
                 .OrderBy(s => s.Group.Year.Name)
                 .ThenBy(s => s.Group.Name)
-                .ThenByDescending(s => s.Date)
+                .ThenBy(s => s.Date)
                 .ThenBy(s => s.StartTime)
                 .ToListAsync();
 
