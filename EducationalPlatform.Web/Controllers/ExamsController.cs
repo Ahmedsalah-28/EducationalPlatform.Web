@@ -1,5 +1,6 @@
 using EducationalPlatform.Data;
 using EducationalPlatform.Models;
+using EducationalPlatform.Services;
 using EducationalPlatform.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,13 @@ namespace EducationalPlatform.Controllers
     public class ExamsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public ExamsController(ApplicationDbContext context) => _context = context;
+        private readonly INotificationService _notifications;
+
+        public ExamsController(ApplicationDbContext context, INotificationService notifications)
+        {
+            _context = context;
+            _notifications = notifications;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -107,6 +114,9 @@ namespace EducationalPlatform.Controllers
             if (!ModelState.IsValid) { await LoadListsAsync(model); return View(model); }
             _context.ExamAssignments.Add(new ExamAssignment { ExamId = exam.Id, GroupId = group!.Id, ExamDate = model.ExamDate.Date, StartTime = model.StartTime, EndTime = model.EndTime });
             await _context.SaveChangesAsync();
+            await _notifications.NotifyGroupAsync(group.Id, NotificationTypes.ExamAssigned,
+                "New exam assigned",
+                $"{exam.Title} - {model.ExamDate:ddd, dd MMM yyyy}, {DateTime.Today.Add(model.StartTime):hh:mm tt} to {DateTime.Today.Add(model.EndTime):hh:mm tt}.");
             TempData["Success"] = "Exam assigned successfully.";
             return RedirectToAction(nameof(Assignments));
         }
@@ -142,13 +152,19 @@ namespace EducationalPlatform.Controllers
             foreach (var s in submitted) if (s.Score.HasValue && (s.Score < 0 || s.Score > assignment.Exam.MaximumGrade)) ModelState.AddModelError("", $"Scores must be between 0 and {assignment.Exam.MaximumGrade:0.##}.");
             if (!ModelState.IsValid) return View(await BuildGradeModelAsync(assignment, submitted.ToDictionary(s => s.StudentId, s => s.Score)));
             var records = await _context.ExamResults.Where(r => r.ExamAssignmentId == assignment.Id).ToDictionaryAsync(r => r.StudentId);
+            var published = new List<StudentNotification>();
             foreach (var s in submitted)
             {
                 if (!s.Score.HasValue) continue;
+                // Notify only when a grade is new or changed (not on every re-save).
+                if (!records.TryGetValue(s.StudentId, out var previous) || previous.Score != s.Score.Value)
+                    published.Add(new StudentNotification(s.StudentId, NotificationTypes.ExamGrade, "Exam grade published",
+                        $"Your grade for {assignment.Exam.Title}: {s.Score.Value:0.##} / {assignment.Exam.MaximumGrade:0.##}."));
                 if (records.TryGetValue(s.StudentId, out var result)) { result.Score = s.Score.Value; result.MaxScore = assignment.Exam.MaximumGrade; result.RecordedAt = DateTime.UtcNow; result.RecordedByUserId = userId; }
                 else _context.ExamResults.Add(new ExamResult { ExamAssignmentId = assignment.Id, StudentId = s.StudentId, Score = s.Score.Value, MaxScore = assignment.Exam.MaximumGrade, RecordedAt = DateTime.UtcNow, RecordedByUserId = userId });
             }
             await _context.SaveChangesAsync();
+            await _notifications.NotifyStudentsAsync(published);
             TempData["Success"] = "Exam results saved.";
             return RedirectToAction(nameof(Assignments));
         }

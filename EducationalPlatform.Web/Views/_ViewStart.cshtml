@@ -12,7 +12,7 @@
     {
         Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_AssistantLayout";
     }
-    else if (currentController == "Chat")
+    else if (currentController == "Chat" || currentController == "Notifications")
     {
         // Chat is shared: each role keeps its own sidebar.
         Layout = User.IsInRole("Student") ? "_StudentLayout"

@@ -1,5 +1,6 @@
 ﻿using EducationalPlatform.Data;
 using EducationalPlatform.Models;
+using EducationalPlatform.Services;
 using EducationalPlatform.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,12 +27,16 @@ namespace EducationalPlatform.Controllers
                 ".txt", ".zip"
             };
 
+        private readonly INotificationService _notifications;
+
         public PostsController(
             ApplicationDbContext context,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            INotificationService notifications)
         {
             _context = context;
             _environment = environment;
+            _notifications = notifications;
         }
 
         // ---------------------------------------------------------------
@@ -297,6 +302,11 @@ namespace EducationalPlatform.Controllers
                 _context.Posts.Add(post);
 
                 await _context.SaveChangesAsync();
+
+                // Never throws: a notification problem must not undo the saved post.
+                await _notifications.NotifyYearAsync(post.YearId, NotificationTypes.PostCreated,
+                    "New post",
+                    post.Title);
 
                 TempData["Success"] =
                     "The post was created successfully.";

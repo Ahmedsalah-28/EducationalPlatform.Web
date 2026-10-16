@@ -1,0 +1,46 @@
+@model List<EducationalPlatform.Models.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+
+    string IconFor(string? type) =>
+        type != null && type.EndsWith("Grade") ? "bi-award"
+        : type == "ExamAssigned" ? "bi-file-earmark-text"
+        : type == "QuizAssigned" ? "bi-ui-checks"
+        : type == "TrainingAssigned" ? "bi-journal-check"
+        : type == "PostCreated" ? "bi-megaphone"
+        : "bi-bell";
+}
+
+<div class="ad-panel">
+    <div class="ad-panel-head">
+        <h2>Notifications</h2>
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <form asp-action="MarkAllRead" method="post" class="m-0">
+                <button type="submit" class="ad-btn">Mark all as read</button>
+            </form>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p class="ad-empty">You have no notifications yet.</p>
+    }
+    else
+    {
+        foreach (var n in Model)
+        {
+            <a class="ad-row ad-notif-row @(n.IsRead ? "" : "unread")"
+               asp-action="Open" asp-route-id="@n.Id">
+                <span class="ad-icon sm"><i class="bi @IconFor(n.Type)"></i></span>
+                <span class="ad-row-main">
+                    <span class="ad-row-title d-block">@n.Title</span>
+                    <span class="ad-row-sub d-block">@n.Message</span>
+                </span>
+                <time class="ad-row-time"
+                      datetime="@DateTime.SpecifyKind(n.CreatedAt, DateTimeKind.Utc).ToString("o")"
+                      data-ago>@n.CreatedAt.ToString("dd MMM yyyy HH:mm") UTC</time>
+            </a>
+        }
+    }
+</div>

@@ -1,0 +1,30 @@
+.ad-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px; margin-inline-start: auto;
+  border-radius: 999px; background: #e03131; color: #fff;
+  font-size: .7rem; font-weight: 700; line-height: 1;
+}
+.ad-badge[hidden] { display: none; }
+.ad-nav a { display: flex; align-items: center; gap: 8px; }
+
+.ad-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
+.ad-notif { position: relative; }
+.ad-bell {
+  position: relative; border: 0; background: transparent;
+  font-size: 1.25rem; padding: 6px 8px; cursor: pointer; color: inherit;
+}
+.ad-bell .ad-badge { position: absolute; top: -2px; right: -2px; margin: 0; }
+
+.ad-notif-panel {
+  position: absolute; right: 0; top: 110%; width: 340px; max-height: 420px;
+  overflow-y: auto; background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.12); z-index: 1000;
+}
+.ad-notif-panel[hidden] { display: none; }
+.ad-notif-head { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #eee; }
+.ad-notif-link { border: 0; background: none; color: var(--ad-primary); font-size: .85rem; cursor: pointer; }
+.ad-notif-item { display: flex; gap: 10px; padding: 10px 14px; text-decoration: none; color: inherit; border-bottom: 1px solid #f3f4f6; }
+.ad-notif-item small { display: block; color: #6b7280; }
+.ad-notif-item.unread { background: var(--ad-primary-soft); }
+.ad-notif-empty { padding: 18px; text-align: center; color: #6b7280; }
+.ad-notif-foot { display: block; text-align: center; padding: 10px; text-decoration: none; }

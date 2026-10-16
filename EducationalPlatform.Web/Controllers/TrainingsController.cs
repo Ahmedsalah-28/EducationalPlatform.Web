@@ -1,5 +1,6 @@
 using EducationalPlatform.Data;
 using EducationalPlatform.Models;
+using EducationalPlatform.Services;
 using EducationalPlatform.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace EducationalPlatform.Controllers
     public class TrainingsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notifications;
 
-        public TrainingsController(ApplicationDbContext context)
+        public TrainingsController(ApplicationDbContext context, INotificationService notifications)
         {
             _context = context;
+            _notifications = notifications;
         }
 
         // =====================================================
@@ -284,6 +287,12 @@ namespace EducationalPlatform.Controllers
 
             await _context.SaveChangesAsync();
 
+            await _notifications.NotifyGroupAsync(group.Id, NotificationTypes.TrainingAssigned,
+                "New training assigned",
+                training.Type == "Online" && model.StartDateTime != null && model.EndDateTime != null
+                    ? $"{training.Title} - available {model.StartDateTime:dd MMM yyyy, hh:mm tt} to {model.EndDateTime:dd MMM yyyy, hh:mm tt}."
+                    : $"{training.Title} - {date:ddd, dd MMM yyyy}.");
+
             TempData["Success"] = "Training assigned.";
             return RedirectToAction(nameof(Assignments));
         }
@@ -393,7 +402,8 @@ namespace EducationalPlatform.Controllers
 
             if (assignment.Training.Type != "InClass")
             {
-                await SaveOnlineGradesAsync(assignment, submitted, max);
+                var onlinePublished = await SaveOnlineGradesAsync(assignment, submitted, max);
+                await _notifications.NotifyStudentsAsync(onlinePublished);
                 TempData["Success"] = "Grades saved.";
                 return RedirectToAction(nameof(Assignments));
             }
@@ -402,11 +412,18 @@ namespace EducationalPlatform.Controllers
                 .Where(r => r.TrainingAssignmentId == assignment.Id)
                 .ToDictionaryAsync(r => r.StudentId);
 
+            var published = new List<StudentNotification>();
+
             foreach (var s in submitted)
             {
                 // Empty field = leave as it is (no grade is added or removed)
                 if (s.Score == null)
                     continue;
+
+                // Notify only when a grade is new or changed (not on every re-save).
+                if (!records.TryGetValue(s.StudentId, out var previous) || previous.Score != s.Score.Value)
+                    published.Add(new StudentNotification(s.StudentId, NotificationTypes.TrainingGrade, "Training grade published",
+                        $"Your grade for {assignment.Training.Title}: {s.Score.Value:0.##} / {max:0.##}."));
 
                 if (records.TryGetValue(s.StudentId, out var record))
                 {
@@ -430,6 +447,7 @@ namespace EducationalPlatform.Controllers
             }
 
             await _context.SaveChangesAsync();
+            await _notifications.NotifyStudentsAsync(published);
 
             TempData["Success"] = "Grades saved.";
             return RedirectToAction(nameof(Assignments));
@@ -563,7 +581,7 @@ namespace EducationalPlatform.Controllers
 
         // Online trainings keep the grade on the student's TrainingAttempt.
         // A student with no attempt gets one created; a graded attempt counts as submitted.
-        private async Task SaveOnlineGradesAsync(
+        private async Task<List<StudentNotification>> SaveOnlineGradesAsync(
             TrainingAssignment assignment,
             List<GradeStudentItem> submitted,
             decimal max)
@@ -575,11 +593,18 @@ namespace EducationalPlatform.Controllers
                 .GroupBy(a => a.StudentId)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.StartedAt).First());
             var now = DateTime.UtcNow;
+            var published = new List<StudentNotification>();
 
             foreach (var s in submitted)
             {
                 if (s.Score == null)
                     continue;
+
+                // Notify only when a grade is new or changed (not on every re-save).
+                latest.TryGetValue(s.StudentId, out var previous);
+                if (previous == null || previous.SubmittedAt == null || previous.Score != s.Score.Value)
+                    published.Add(new StudentNotification(s.StudentId, NotificationTypes.TrainingGrade, "Training grade published",
+                        $"Your grade for {assignment.Training.Title}: {s.Score.Value:0.##} / {max:0.##}."));
 
                 if (latest.TryGetValue(s.StudentId, out var attempt))
                 {
@@ -602,6 +627,7 @@ namespace EducationalPlatform.Controllers
             }
 
             await _context.SaveChangesAsync();
+            return published;
         }
 
         private async Task<GradeTrainingViewModel> BuildGradeModelAsync(

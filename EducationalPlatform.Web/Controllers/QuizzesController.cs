@@ -1,5 +1,6 @@
 using EducationalPlatform.Data;
 using EducationalPlatform.Models;
+using EducationalPlatform.Services;
 using EducationalPlatform.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,13 @@ namespace EducationalPlatform.Controllers
     public class QuizzesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public QuizzesController(ApplicationDbContext context) => _context = context;
+        private readonly INotificationService _notifications;
+
+        public QuizzesController(ApplicationDbContext context, INotificationService notifications)
+        {
+            _context = context;
+            _notifications = notifications;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -77,7 +84,11 @@ namespace EducationalPlatform.Controllers
             if (model.EndDateTime <= model.StartDateTime) ModelState.AddModelError(nameof(model.EndDateTime), "End date/time must be after start date/time.");
             if (group != null && await _context.QuizAssignments.AnyAsync(a => a.QuizId == quiz.Id && a.GroupId == group.Id && model.StartDateTime < a.EndDateTime && model.EndDateTime > a.StartDateTime)) ModelState.AddModelError("", "This quiz has an overlapping assignment for this group.");
             if (!ModelState.IsValid) { await LoadListsAsync(model); return View(model); }
-            _context.QuizAssignments.Add(new QuizAssignment { QuizId = quiz.Id, GroupId = group!.Id, StartDateTime = model.StartDateTime, EndDateTime = model.EndDateTime }); await _context.SaveChangesAsync(); TempData["Success"] = "Quiz assigned successfully."; return RedirectToAction(nameof(Assignments));
+            _context.QuizAssignments.Add(new QuizAssignment { QuizId = quiz.Id, GroupId = group!.Id, StartDateTime = model.StartDateTime, EndDateTime = model.EndDateTime }); await _context.SaveChangesAsync();
+            await _notifications.NotifyGroupAsync(group.Id, NotificationTypes.QuizAssigned,
+                "New quiz assigned",
+                $"{quiz.Title} - available {model.StartDateTime:dd MMM yyyy, hh:mm tt} to {model.EndDateTime:dd MMM yyyy, hh:mm tt}.");
+            TempData["Success"] = "Quiz assigned successfully."; return RedirectToAction(nameof(Assignments));
         }
         [HttpGet]
         public async Task<IActionResult> GetGroupsByYear(int yearId)
@@ -163,9 +174,15 @@ namespace EducationalPlatform.Controllers
                 .GroupBy(a => a.StudentId)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.StartedAt).First());
             var now = DateTime.UtcNow;
+            var published = new List<StudentNotification>();
             foreach (var s in submitted)
             {
                 if (!s.Score.HasValue) continue;
+                // Notify only when a grade is new or changed (not on every re-save).
+                latest.TryGetValue(s.StudentId, out var previous);
+                if (previous == null || previous.SubmittedAt == null || previous.Score != s.Score.Value)
+                    published.Add(new StudentNotification(s.StudentId, NotificationTypes.QuizGrade, "Quiz grade published",
+                        $"Your grade for {assignment.Quiz.Title}: {s.Score.Value:0.##} / {assignment.Quiz.MaximumGrade:0.##}."));
                 if (latest.TryGetValue(s.StudentId, out var attempt))
                 {
                     attempt.Score = s.Score.Value;
@@ -186,6 +203,7 @@ namespace EducationalPlatform.Controllers
                 }
             }
             await _context.SaveChangesAsync();
+            await _notifications.NotifyStudentsAsync(published);
             TempData["Success"] = "Quiz scores saved.";
             return RedirectToAction(nameof(Assignments));
         }

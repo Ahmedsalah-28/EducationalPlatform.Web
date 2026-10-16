@@ -31,6 +31,9 @@ namespace EducationalPlatform.Web
             // Enable real-time chat
             builder.Services.AddSignalR();
 
+            // In-app notifications (saved + pushed live through SignalR)
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())

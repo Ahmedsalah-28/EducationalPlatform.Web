@@ -33,6 +33,26 @@ namespace EducationalPlatform.Web.Controllers
             return View();
         }
 
+        // Total unread messages for the sidebar badge.
+        [HttpGet]
+        public async Task<IActionResult> UnreadCount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return Unauthorized();
+
+            return Json(new { count = await GetUnreadCountAsync(user.Id) });
+        }
+
+        private Task<int> GetUnreadCountAsync(string userId)
+        {
+            return _db.Messages.CountAsync(m =>
+                m.SenderUserId != userId &&
+                !m.IsRead &&
+                m.Conversation.Participants.Any(p => p.UserId == userId));
+        }
+
 
 
         [HttpGet]
@@ -385,7 +405,17 @@ namespace EducationalPlatform.Web.Controllers
                 message.IsRead = true;
 
             if (incomingMessages.Count > 0)
+            {
                 await _db.SaveChangesAsync();
+
+                // Tell the user's open pages (any tab) that the unread count dropped.
+                await _hub.Clients
+                    .Group($"user_{user.Id}")
+                    .SendAsync("UnreadCountChanged", new
+                    {
+                        count = await GetUnreadCountAsync(user.Id)
+                    });
+            }
 
             var messages = await _db.Messages
                 .Where(m => m.ConversationId == conversationId)
