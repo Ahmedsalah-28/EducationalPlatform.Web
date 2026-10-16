@@ -6,6 +6,7 @@
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public DateTime? LastMessageAt { get; set; }
 
         public ICollection<ConversationParticipant> Participants { get; set; }
             = new List<ConversationParticipant>();

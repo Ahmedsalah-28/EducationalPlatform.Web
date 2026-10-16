@@ -14,7 +14,6 @@
 
         public bool IsRead { get; set; } = false;
 
-
         public Conversation Conversation { get; set; } = null!;
 
         public ApplicationUser SenderUser { get; set; } = null!;

@@ -17,7 +17,7 @@ namespace EducationalPlatform.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -246,6 +246,9 @@ namespace EducationalPlatform.Web.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastMessageAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
@@ -487,6 +490,7 @@ namespace EducationalPlatform.Web.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
+                        .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ConversationId")

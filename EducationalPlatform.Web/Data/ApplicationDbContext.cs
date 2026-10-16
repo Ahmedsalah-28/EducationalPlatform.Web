@@ -1,6 +1,7 @@
 ﻿using EducationalPlatform.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace EducationalPlatform.Data
 {
@@ -431,12 +432,23 @@ namespace EducationalPlatform.Data
                 .WithMany()
                 .HasForeignKey(m => m.SenderUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+           
+            builder.Entity<Message>()
+                .Property(m => m.Content)
+                .IsRequired()
+                .HasMaxLength(5000);
 
             builder.Entity<Notification>()
                 .HasOne(n => n.User)
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            
+            builder.Entity<Conversation>()
+                .HasMany(c => c.Messages)
+                .WithOne(m => m.Conversation)
+                .HasForeignKey(m => m.ConversationId);
 
 
             builder.Entity<AttendanceSettings>()
