@@ -5,12 +5,19 @@
     {
         "Admin", "Years", "Groups", "Students", "Assistants", "GroupSchedules",
         "ClassSessions", "Attendance", "Trainings", "Exams", "Quizzes",
-        "RegistrationRequests", "Posts","Chat"
+        "RegistrationRequests", "Posts"
     };
 
     if (staffControllers.Contains(currentController))
     {
         Layout = User.IsInRole("Admin") ? "_AdminLayout" : "_AssistantLayout";
+    }
+    else if (currentController == "Chat")
+    {
+        // Chat is shared: each role keeps its own sidebar.
+        Layout = User.IsInRole("Student") ? "_StudentLayout"
+               : User.IsInRole("Admin") ? "_AdminLayout"
+               : "_AssistantLayout";
     }
     else if (currentController == "Student" && User.IsInRole("Student"))
     {

@@ -26,10 +26,10 @@ namespace EducationalPlatform.Controllers
             var sessions = await _context.ClassSessions
                 .Include(s => s.Group)
                     .ThenInclude(g => g.Year)
-                .OrderBy(s => s.Group.Year.Name)
-                .ThenBy(s => s.Group.Name)
-                .ThenBy(s => s.Date)
+                .OrderByDescending(s => s.Date)
                 .ThenBy(s => s.StartTime)
+                .ThenBy(s => s.Group.Year.Name)
+                .ThenBy(s => s.Group.Name)
                 .ToListAsync();
 
             return View(sessions);
@@ -82,9 +82,9 @@ namespace EducationalPlatform.Controllers
                 .Include(s => s.Group)
                     .ThenInclude(g => g.Year)
                 .Where(s => s.Group.YearId == id)
-                .OrderBy(s => s.Group.Name)
-                .ThenByDescending(s => s.Date)
+                .OrderByDescending(s => s.Date)
                 .ThenBy(s => s.StartTime)
+                .ThenBy(s => s.Group.Name)
                 .ToListAsync();
 
             ViewBag.SelectedYearId = year.Id;

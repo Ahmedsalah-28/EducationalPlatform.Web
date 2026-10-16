@@ -51,14 +51,7 @@ else
                         <td>@a.AssignedDate.ToString("yyyy-MM-dd")</td>
                         <td>@a.GradedCount / @a.StudentCount</td>
                         <td>
-                            @if (a.TrainingType == "InClass")
-                            {
-                                <a asp-action="Grade" asp-route-id="@a.Id" class="btn btn-sm btn-success">Grade</a>
-                            }
-                            else
-                            {
-                                <span class="text-muted small">Student attempts</span>
-                            }
+                            <a asp-action="Grade" asp-route-id="@a.Id" class="btn btn-sm btn-success">Grade</a>
                         </td>
                     </tr>
                 }

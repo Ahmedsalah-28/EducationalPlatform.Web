@@ -86,20 +86,108 @@ namespace EducationalPlatform.Controllers
         }
         public async Task<IActionResult> Attempts(int? id)
         {
-            if (id == null) return NotFound(); var assignment = await LoadAssignmentAsync(id.Value); if (assignment == null) return NotFound(); if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId)) return Forbid();
-            var attempts = await _context.QuizAttempts.Where(a => a.QuizAssignmentId == assignment.Id).Include(a => a.Student).OrderBy(a => a.Student.FullName).ToListAsync();
-            return View(new GradeQuizViewModel { AssignmentId = assignment.Id, QuizTitle = assignment.Quiz.Title, YearName = assignment.Group.Year.Name, GroupName = assignment.Group.Name, MaximumGrade = assignment.Quiz.MaximumGrade, Students = attempts.Select(a => new QuizGradeStudent { AttemptId = a.Id, StudentId = a.StudentId, FullName = a.Student.FullName, Score = a.Score, StartedAt = a.StartedAt, SubmittedAt = a.SubmittedAt }).ToList() });
+            if (id == null) return NotFound();
+            var assignment = await LoadAssignmentAsync(id.Value);
+            if (assignment == null) return NotFound();
+            if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId)) return Forbid();
+            return View(await BuildGradeModelAsync(assignment, null));
         }
+
+        // Lists every active student in the assigned group (not only students who already have an attempt),
+        // so staff can enter a score for anyone.
+        private async Task<GradeQuizViewModel> BuildGradeModelAsync(QuizAssignment assignment, Dictionary<int, decimal?>? postedScores)
+        {
+            var students = await _context.Enrollments
+                .Where(e => e.GroupId == assignment.GroupId && e.Status == "Active")
+                .Select(e => new { e.StudentId, e.Student.FullName })
+                .Distinct()
+                .OrderBy(s => s.FullName)
+                .ToListAsync();
+            var attempts = await _context.QuizAttempts
+                .Where(a => a.QuizAssignmentId == assignment.Id)
+                .ToListAsync();
+            var latest = attempts
+                .GroupBy(a => a.StudentId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.StartedAt).First());
+            return new GradeQuizViewModel
+            {
+                AssignmentId = assignment.Id,
+                QuizTitle = assignment.Quiz.Title,
+                YearName = assignment.Group.Year.Name,
+                GroupName = assignment.Group.Name,
+                MaximumGrade = assignment.Quiz.MaximumGrade,
+                Students = students.Select(s =>
+                {
+                    latest.TryGetValue(s.StudentId, out var attempt);
+                    decimal? score = postedScores != null && postedScores.TryGetValue(s.StudentId, out var posted)
+                        ? posted
+                        : (attempt != null && attempt.SubmittedAt != null ? attempt.Score : (decimal?)null);
+                    return new QuizGradeStudent
+                    {
+                        AttemptId = attempt?.Id ?? 0,
+                        StudentId = s.StudentId,
+                        FullName = s.FullName,
+                        Score = score,
+                        StartedAt = attempt?.StartedAt,
+                        SubmittedAt = attempt?.SubmittedAt
+                    };
+                }).ToList()
+            };
+        }
+
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Attempts(GradeQuizViewModel model)
         {
-            var assignment = await LoadAssignmentAsync(model.AssignmentId); if (assignment == null) return NotFound(); if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId)) return Forbid();
-            var allowedAttemptIds = await _context.QuizAttempts.Where(a => a.QuizAssignmentId == assignment.Id).Select(a => a.Id).ToListAsync();
-            foreach (var item in model.Students ?? new()) if (allowedAttemptIds.Contains(item.AttemptId) && (item.Score < 0 || item.Score > assignment.Quiz.MaximumGrade)) ModelState.AddModelError("", $"Scores must be between 0 and {assignment.Quiz.MaximumGrade:0.##}.");
-            if (!ModelState.IsValid) return await Attempts(assignment.Id);
-            var scores = (model.Students ?? new()).Where(s => allowedAttemptIds.Contains(s.AttemptId)).GroupBy(s => s.AttemptId).Select(g => g.First()).ToDictionary(s => s.AttemptId, s => s.Score);
-            var attempts = await _context.QuizAttempts.Where(a => scores.Keys.Contains(a.Id)).ToListAsync(); foreach (var attempt in attempts) { attempt.Score = scores[attempt.Id]; attempt.MaxScore = assignment.Quiz.MaximumGrade; }
-            await _context.SaveChangesAsync(); TempData["Success"] = "Quiz scores saved."; return RedirectToAction(nameof(Assignments));
+            var assignment = await LoadAssignmentAsync(model.AssignmentId);
+            if (assignment == null) return NotFound();
+            if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId)) return Forbid();
+            var activeIds = await _context.Enrollments
+                .Where(e => e.GroupId == assignment.GroupId && e.Status == "Active")
+                .Select(e => e.StudentId)
+                .ToListAsync();
+            var submitted = (model.Students ?? new())
+                .Where(s => activeIds.Contains(s.StudentId))
+                .GroupBy(s => s.StudentId)
+                .Select(g => g.First())
+                .ToList();
+            foreach (var s in submitted)
+                if (s.Score.HasValue && (s.Score < 0 || s.Score > assignment.Quiz.MaximumGrade))
+                    ModelState.AddModelError("", $"Scores must be between 0 and {assignment.Quiz.MaximumGrade:0.##}.");
+            if (!ModelState.IsValid)
+                return View(await BuildGradeModelAsync(assignment, submitted.ToDictionary(s => s.StudentId, s => s.Score)));
+
+            var existing = await _context.QuizAttempts
+                .Where(a => a.QuizAssignmentId == assignment.Id)
+                .ToListAsync();
+            var latest = existing
+                .GroupBy(a => a.StudentId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.StartedAt).First());
+            var now = DateTime.UtcNow;
+            foreach (var s in submitted)
+            {
+                if (!s.Score.HasValue) continue;
+                if (latest.TryGetValue(s.StudentId, out var attempt))
+                {
+                    attempt.Score = s.Score.Value;
+                    attempt.MaxScore = assignment.Quiz.MaximumGrade;
+                    attempt.SubmittedAt ??= now;   // a graded quiz counts as submitted
+                }
+                else
+                {
+                    _context.QuizAttempts.Add(new QuizAttempt
+                    {
+                        QuizAssignmentId = assignment.Id,
+                        StudentId = s.StudentId,
+                        Score = s.Score.Value,
+                        MaxScore = assignment.Quiz.MaximumGrade,
+                        StartedAt = now,
+                        SubmittedAt = now
+                    });
+                }
+            }
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Quiz scores saved.";
+            return RedirectToAction(nameof(Assignments));
         }
 
         private async Task<List<int>?> GetAllowedYearIdsAsync()

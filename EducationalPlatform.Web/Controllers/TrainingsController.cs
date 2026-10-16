@@ -171,7 +171,9 @@ namespace EducationalPlatform.Controllers
                     GroupName = a.Group.Name,
                     AssignedDate = a.AssignedDate,
                     MaxGrade = a.Training.MaximumGrade,
-                    GradedCount = a.TrainingRecords.Count,
+                    GradedCount = a.Training.Type == "InClass"
+                        ? a.TrainingRecords.Count
+                        : a.TrainingAttempts.Count(t => t.SubmittedAt != null),
                     StudentCount = a.Group.Enrollments
                         .Count(e => e.Status == "Active")
                 })
@@ -321,16 +323,24 @@ namespace EducationalPlatform.Controllers
             if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId))
                 return Forbid();
 
-            if (assignment.Training.Type != "InClass")
-            {
-                TempData["Error"] =
-                    "Grades for online trainings come from the student's own attempt.";
-                return RedirectToAction(nameof(Assignments));
-            }
+            Dictionary<int, decimal?> existing;
 
-            var existing = await _context.TrainingRecords
-                .Where(r => r.TrainingAssignmentId == assignment.Id)
-                .ToDictionaryAsync(r => r.StudentId, r => (decimal?)r.Score);
+            if (assignment.Training.Type == "InClass")
+            {
+                existing = await _context.TrainingRecords
+                    .Where(r => r.TrainingAssignmentId == assignment.Id)
+                    .ToDictionaryAsync(r => r.StudentId, r => (decimal?)r.Score);
+            }
+            else
+            {
+                // Online training: scores live on the student's attempt.
+                var attempts = await _context.TrainingAttempts
+                    .Where(a => a.TrainingAssignmentId == assignment.Id && a.SubmittedAt != null)
+                    .ToListAsync();
+                existing = attempts
+                    .GroupBy(a => a.StudentId)
+                    .ToDictionary(g => g.Key, g => (decimal?)g.OrderByDescending(a => a.StartedAt).First().Score);
+            }
 
             return View(await BuildGradeModelAsync(assignment, existing));
         }
@@ -346,9 +356,6 @@ namespace EducationalPlatform.Controllers
 
             if (!CanAccessYear(await GetAllowedYearIdsAsync(), assignment.Group.YearId))
                 return Forbid();
-
-            if (assignment.Training.Type != "InClass")
-                return BadRequest();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -382,6 +389,13 @@ namespace EducationalPlatform.Controllers
             {
                 var posted = submitted.ToDictionary(s => s.StudentId, s => s.Score);
                 return View(await BuildGradeModelAsync(assignment, posted));
+            }
+
+            if (assignment.Training.Type != "InClass")
+            {
+                await SaveOnlineGradesAsync(assignment, submitted, max);
+                TempData["Success"] = "Grades saved.";
+                return RedirectToAction(nameof(Assignments));
             }
 
             var records = await _context.TrainingRecords
@@ -546,6 +560,49 @@ namespace EducationalPlatform.Controllers
                 .Include(a => a.Group)
                     .ThenInclude(g => g.Year)
                 .FirstOrDefaultAsync(a => a.Id == id);
+
+        // Online trainings keep the grade on the student's TrainingAttempt.
+        // A student with no attempt gets one created; a graded attempt counts as submitted.
+        private async Task SaveOnlineGradesAsync(
+            TrainingAssignment assignment,
+            List<GradeStudentItem> submitted,
+            decimal max)
+        {
+            var existing = await _context.TrainingAttempts
+                .Where(a => a.TrainingAssignmentId == assignment.Id)
+                .ToListAsync();
+            var latest = existing
+                .GroupBy(a => a.StudentId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.StartedAt).First());
+            var now = DateTime.UtcNow;
+
+            foreach (var s in submitted)
+            {
+                if (s.Score == null)
+                    continue;
+
+                if (latest.TryGetValue(s.StudentId, out var attempt))
+                {
+                    attempt.Score = s.Score.Value;
+                    attempt.MaxScore = max;
+                    attempt.SubmittedAt ??= now;
+                }
+                else
+                {
+                    _context.TrainingAttempts.Add(new TrainingAttempt
+                    {
+                        TrainingAssignmentId = assignment.Id,
+                        StudentId = s.StudentId,
+                        Score = s.Score.Value,
+                        MaxScore = max,
+                        StartedAt = now,
+                        SubmittedAt = now
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
 
         private async Task<GradeTrainingViewModel> BuildGradeModelAsync(
             TrainingAssignment assignment,

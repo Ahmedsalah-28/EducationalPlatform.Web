@@ -25,8 +25,8 @@ namespace EducationalPlatform.ViewModels
     {
         public int ExamId { get; set; }
         public string ExamTitle { get; set; } = "";
-        [Range(1, int.MaxValue)] public int YearId { get; set; }
-        [Range(1, int.MaxValue)] public int GroupId { get; set; }
+        [Display(Name = "Year"), Range(1, int.MaxValue, ErrorMessage = "Please choose a year.")] public int YearId { get; set; }
+        [Display(Name = "Group"), Range(1, int.MaxValue, ErrorMessage = "Please choose a group.")] public int GroupId { get; set; }
         [DataType(DataType.Date), Required] public DateTime ExamDate { get; set; } = DateTime.Today;
         [Required] public TimeSpan StartTime { get; set; } = new(9, 0, 0);
         [Required] public TimeSpan EndTime { get; set; } = new(10, 0, 0);
@@ -102,11 +102,11 @@ namespace EducationalPlatform.ViewModels
 
     public class QuizGradeStudent
     {
-        public int AttemptId { get; set; }
+        public int AttemptId { get; set; }          // 0 = no attempt recorded yet
         public int StudentId { get; set; }
         public string FullName { get; set; } = "";
-        public decimal Score { get; set; }
-        public DateTime StartedAt { get; set; }
+        public decimal? Score { get; set; }
+        public DateTime? StartedAt { get; set; }
         public DateTime? SubmittedAt { get; set; }
     }
 }
