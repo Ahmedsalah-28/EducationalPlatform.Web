@@ -2,17 +2,76 @@
     ViewData["Title"] = "Registration Submitted";
 }
 
-<div class="text-center mt-5">
-    <h2>Registration Request Submitted</h2>
+<style>
+    .done-wrapper {
+        min-height: 70vh;
+    }
 
-    <p>
-        Your request has been submitted successfully.
-        Please wait for the administration to review it.
-    </p>
+    .done-card {
+        border: 0;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
 
-    <a asp-controller="Home"
-       asp-action="Index"
-       class="btn btn-primary">
-        Back to Home
-    </a>
+    .done-icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: #d1e7dd;
+        color: #198754;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .done-steps {
+        background: #f8f9fa;
+        border-radius: .75rem;
+        padding: 1rem 1.25rem;
+        text-align: start;
+    }
+
+    .done-btn {
+        border-radius: .6rem;
+        padding: .7rem 1.5rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="row justify-content-center align-items-center done-wrapper">
+    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="card done-card shadow-lg">
+            <div class="card-body p-4 p-md-5 text-center">
+
+                <div class="done-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"
+                         fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                    </svg>
+                </div>
+
+                <h2 class="fw-bold mb-2">Registration Request Submitted</h2>
+
+                <p class="text-muted mb-4">
+                    Your request has been submitted successfully.
+                    Please wait for the administration to review it.
+                </p>
+
+                <div class="done-steps mb-4 small">
+                    <div class="fw-semibold mb-1">What happens next?</div>
+                    <div class="text-muted">
+                        The administration will review your request and contact you
+                        using the email or phone number you provided.
+                    </div>
+                </div>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-primary done-btn">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
 </div>

@@ -4,52 +4,136 @@
     ViewData["Title"] = "Student Registration";
 }
 
-<h2>Student Registration</h2>
+<style>
+    .reg-wrapper {
+        min-height: 70vh;
+    }
 
-<p>Fill in your information to request enrollment.</p>
+    .reg-card {
+        border: 0;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly"
-                 class="text-danger"></div>
+    .reg-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: #fff;
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
 
-            <div class="mb-3">
-                <label asp-for="FullName" class="form-label"></label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName"
-                      class="text-danger"></span>
+        .reg-header h2 {
+            font-weight: 700;
+            margin-bottom: .25rem;
+        }
+
+        .reg-header p {
+            margin-bottom: 0;
+            opacity: .9;
+        }
+
+    .reg-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .reg-card .form-control,
+    .reg-card .form-select {
+        border-radius: .6rem;
+    }
+
+        .reg-card .form-control:focus,
+        .reg-card .form-select:focus {
+            box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+        }
+
+    .reg-submit {
+        border-radius: .6rem;
+        padding: .8rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="row justify-content-center align-items-center reg-wrapper">
+    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div class="card reg-card shadow-lg">
+
+            <div class="reg-header">
+                <div class="reg-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                         fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                    </svg>
+                </div>
+                <h2>Student Registration</h2>
+                <p>Fill in your information to request enrollment.</p>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email"
-                      class="text-danger"></span>
-            </div>
+            <div class="card-body p-4 p-md-5">
+                <form asp-action="Create" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger py-2 small"></div>
 
-            <div class="mb-3">
-                <label asp-for="Phone" class="form-label"></label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone"
-                      class="text-danger"></span>
-            </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Full name"
+                               autocomplete="name" />
+                        <label asp-for="FullName"></label>
+                        <span asp-validation-for="FullName"
+                              class="text-danger small"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="GroupId" class="form-label"></label>
-                <select asp-for="GroupId"
-                        asp-items="ViewBag.Groups"
-                        class="form-select">
-                    <option value="">-- Select Group --</option>
-                </select>
-                <span asp-validation-for="GroupId"
-                      class="text-danger"></span>
-            </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email"
+                               type="email"
+                               class="form-control"
+                               placeholder="name@example.com"
+                               autocomplete="email" />
+                        <label asp-for="Email"></label>
+                        <span asp-validation-for="Email"
+                              class="text-danger small"></span>
+                    </div>
 
-            <button type="submit" class="btn btn-primary">
-                Submit Registration
-            </button>
-        </form>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Phone"
+                               type="tel"
+                               class="form-control"
+                               placeholder="Phone"
+                               dir="ltr"
+                               autocomplete="tel" />
+                        <label asp-for="Phone"></label>
+                        <span asp-validation-for="Phone"
+                              class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <select asp-for="GroupId"
+                                asp-items="ViewBag.Groups"
+                                class="form-select">
+                            <option value="">-- Select Group --</option>
+                        </select>
+                        <label asp-for="GroupId"></label>
+                        <span asp-validation-for="GroupId"
+                              class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 reg-submit">
+                        Submit Registration
+                    </button>
+
+                    <p class="text-center text-muted small mt-3 mb-0">
+                        Your request will be reviewed and you will be contacted soon.
+                    </p>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

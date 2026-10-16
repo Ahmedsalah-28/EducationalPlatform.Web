@@ -4,6 +4,7 @@ using EducationalPlatform.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using EducationalPlatform.Services;
+using EducationalPlatform.Data;
 namespace EducationalPlatform.Web
 {
     public class Program
